@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4f33b363f709e04eabce8db90edebda, type: 3}
+  m_Name: AlienPlant
+  m_EditorClassIdentifier: Assembly-CSharp::PlantData
+  plantName: AlienPlant
+  daysToGrow: 1
+  growthStages:
+  - {fileID: 4303964344734327090, guid: 76ac61fcb199c4240b9913a329905dd1, type: 3}
+  - {fileID: 4543202818094533507, guid: 2e00610eb0cb52d4b88c1bf911e7b8ea, type: 3}
+  - {fileID: 6598320656225331606, guid: 552d3a2ec61464f47b7c9dbfcc666bdf, type: 3}
+  sellPrice: 10
+  regrows: 0
+  regrowDays: 0

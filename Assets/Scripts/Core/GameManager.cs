@@ -21,5 +21,6 @@ namespace OurGame.Core
             currentDay++;
             GameEvents.DayPassed();
         }
+
     }
 }

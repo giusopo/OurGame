@@ -1,5 +1,4 @@
 using System;
-using OurGame.Farming;
 
 namespace OurGame.Core
 {
@@ -9,12 +8,15 @@ namespace OurGame.Core
     /// </summary>
     public static class GameEvents
     {
-        // Example event: crop planted
-        public static event Action<CropData> OnCropPlanted;
-        public static void CropPlanted(CropData data) => OnCropPlanted?.Invoke(data);
+        // crop planted
+        public static event Action<PlantData> OnPlantPlanted;
+        public static void PlantPlanted(PlantData data) => OnPlantPlanted?.Invoke(data);
 
-        // Add additional events below
+        // crop harvested
+        public static event Action<PlantData> OnPlantHarvested;
+        public static void PlantHarvested(PlantData data) => OnPlantHarvested?.Invoke(data);
 
+        // day progression
         public static event Action OnDayPassed;
         public static void DayPassed() => OnDayPassed?.Invoke();
     }

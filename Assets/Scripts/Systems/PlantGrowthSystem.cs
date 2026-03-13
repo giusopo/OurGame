@@ -3,14 +3,18 @@ using OurGame.Core;
 
 public class PlantGrowthSystem : MonoBehaviour
 {
+    private float timer = 0f;
+
     void Update()
     {
-        if (TimeManager.Instance == null) return;
+        timer += Time.deltaTime;
+
+        if (timer < 1f) return;
+        timer = 0f;
 
         float currentGameTime = TimeManager.Instance.GetCurrentTimeInHours();
 
-        Plant[] plants = FindObjectsByType<Plant>(FindObjectsSortMode.None);
-        foreach (Plant plant in plants)
+        foreach (Plant plant in PlantManager.Instance.Plants)
         {
             plant.UpdateGrowth(currentGameTime);
         }

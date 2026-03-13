@@ -1,4 +1,5 @@
 using UnityEngine;
+using OurGame.Core;
 
 public class Plant : MonoBehaviour
 {
@@ -18,6 +19,8 @@ public class Plant : MonoBehaviour
         // growthTime totale della pianta in ore
         growthTime = plantData.daysToGrow * 24f; // 1 giorno = 24 ore di gioco
         growthStage = 0;
+
+        PlantManager.Instance.RegisterPlant(this);
 
         UpdateVisual();
     }
@@ -63,12 +66,21 @@ public class Plant : MonoBehaviour
 
         if (plantData.regrows)
         {
-            // riparte da regrowDays prima della maturità
+            // la pianta torna a uno stato prima della maturità
             plantedTime = currentGameTime - (growthTime - plantData.regrowDays * 24f);
         }
         else
         {
+            // rimuovi dal manager prima di distruggere
+            PlantManager.Instance.UnregisterPlant(this);
             Destroy(gameObject);
         }
     }
+
+    void OnDestroy()
+    {
+        if (PlantManager.Instance != null)
+            PlantManager.Instance.UnregisterPlant(this);
+    }
+
 }

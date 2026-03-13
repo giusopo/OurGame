@@ -14,7 +14,7 @@ public class PlayerInteraction : MonoBehaviour
 
         if (value.isPressed && currentTile != null)
         {
-            float currentGameTime = TimeManager.Instance.GetCurrentTimeInHours();
+            float currentGameTime = TimeManager.Instance.GetCurrentTimeInMinutes();
 
             Debug.Log("Interagisci con il tile!");
 

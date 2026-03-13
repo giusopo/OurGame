@@ -12,7 +12,7 @@ public class PlantGrowthSystem : MonoBehaviour
         if (timer < 1f) return;
         timer = 0f;
 
-        float currentGameTime = TimeManager.Instance.GetCurrentTimeInHours();
+        float currentGameTime = TimeManager.Instance.GetCurrentTimeInMinutes();
 
         foreach (Plant plant in PlantManager.Instance.Plants)
         {

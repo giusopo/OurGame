@@ -709,9 +709,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7263623146951188175, guid: 51d1696ac90e56e468fcab5fa696488d, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1008288914}
-    - targetCorrespondingSourceObject: {fileID: 7263623146951188175, guid: 51d1696ac90e56e468fcab5fa696488d, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1008288919}
   m_SourcePrefab: {fileID: 100100000, guid: 51d1696ac90e56e468fcab5fa696488d, type: 3}
 --- !u!1 &1008288913 stripped
@@ -719,19 +716,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7263623146951188175, guid: 51d1696ac90e56e468fcab5fa696488d, type: 3}
   m_PrefabInstance: {fileID: 1008288912}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1008288914
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1008288913}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2e0e7eb9e513e249818047af5afc454, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FarmTile
-  currentPlant: {fileID: 0}
 --- !u!65 &1008288919
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -991,10 +975,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 214acff5cc8b7cb4aa48747d6c0ca877, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OurGame.Core.TimeManager
-  realSecondsPerGameHour: 5
+  realSecondsPerGameMinute: 2
+  minutesPerHour: 60
   hoursPerDay: 24
   currentDay: 1
   currentHour: 6
+  currentMinute: 0
 --- !u!4 &1415509784
 Transform:
   m_ObjectHideFlags: 0

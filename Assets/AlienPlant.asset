@@ -13,7 +13,9 @@ MonoBehaviour:
   m_Name: AlienPlant
   m_EditorClassIdentifier: Assembly-CSharp::PlantData
   plantName: AlienPlant
-  daysToGrow: 1
+  growDays: 0
+  growHours: 0
+  growMinutes: 3
   growthStages:
   - {fileID: 2630425031254273193, guid: 62958d7fa7477fb4e8c00327286f111a, type: 3}
   - {fileID: 5054277889059016994, guid: ba1ca28e770089747a753dca5ab7ceb5, type: 3}
@@ -21,3 +23,5 @@ MonoBehaviour:
   sellPrice: 10
   regrows: 0
   regrowDays: 0
+  regrowHours: 0
+  regrowMinutes: 0

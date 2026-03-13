@@ -2,57 +2,54 @@ using UnityEngine;
 
 namespace OurGame.Core
 {
-    /// <summary>
-    /// Manages in-game time progression.
-    /// Converts real time to game time and triggers day/hour events.
-    /// </summary>
 public class TimeManager : SingletonMono<TimeManager>
 {
     [Header("Time Settings")]
-    public float realSecondsPerGameHour = 5; // 5 real seconds = 1 in-game hour
+    public float realSecondsPerGameMinute = 2f; // 2 secondi reali = 1 minuto di gioco
+
+    public int minutesPerHour = 60;
     public int hoursPerDay = 24;
 
     public int currentDay = 1;
     public int currentHour = 6;
+    public int currentMinute = 0;
 
-    private float hourTimer = 0f; 
+    private float minuteTimer = 0f;
 
     void Update()
     {
-        hourTimer += Time.deltaTime;
+        minuteTimer += Time.deltaTime;
 
-        if (hourTimer >= realSecondsPerGameHour)
+        if (minuteTimer >= realSecondsPerGameMinute)
         {
-            hourTimer -= realSecondsPerGameHour;
-            AdvanceHour();
+            minuteTimer -= realSecondsPerGameMinute;
+            AdvanceMinute();
         }
     }
 
-    void AdvanceHour()
+    void AdvanceMinute()
     {
-        currentHour++;
+        currentMinute++;
 
-        if (currentHour >= hoursPerDay)
+        if (currentMinute >= minutesPerHour)
         {
-            currentHour = 0;
-            AdvanceDay();
+            currentMinute = 0;
+            currentHour++;
+
+            if (currentHour >= hoursPerDay)
+            {
+                currentHour = 0;
+                currentDay++;
+                GameEvents.DayPassed();
+            }
         }
 
-        Debug.Log($"Day {currentDay} - Hour {currentHour}");
+        Debug.Log($"Day {currentDay} {currentHour}:{currentMinute}");
     }
 
-    void AdvanceDay()
+    public float GetCurrentTimeInMinutes()
     {
-        currentDay++;
-        OurGame.Core.GameEvents.DayPassed();
-
-        Debug.Log("New Day: " + currentDay);
-    }
-
-    public float GetCurrentTimeInHours()
-    {
-        return currentDay * 24f + currentHour + hourTimer / realSecondsPerGameHour;
+        return currentDay * 1440f + currentHour * 60f + currentMinute;
     }
 }
-
 }

@@ -5,8 +5,9 @@ public class Plant : MonoBehaviour
 {
     public PlantData plantData;
 
-    private float plantedTime = 0f;    // tempo di gioco in ore
-    private float growthTime = 0f;     // tempo totale necessario per crescere
+    private float plantedTime;    // minuti di gioco
+    private float growthTime;     // minuti necessari
+    private float nextGrowthCheckTime;
     private int growthStage = 0;
 
     private GameObject currentVisual;
@@ -17,26 +18,38 @@ public class Plant : MonoBehaviour
         plantedTime = currentGameTime;
 
         // growthTime totale della pianta in ore
-        growthTime = plantData.daysToGrow * 24f; // 1 giorno = 24 ore di gioco
+        growthTime = plantData.GetGrowthTimeMinutes();
         growthStage = 0;
+
+        ScheduleNextGrowth();
 
         PlantManager.Instance.RegisterPlant(this);
 
         UpdateVisual();
     }
 
+    void ScheduleNextGrowth()
+    {
+        int stages = plantData.growthStages.Length;
+
+        float stageDuration = growthTime / stages;
+
+        nextGrowthCheckTime = plantedTime + stageDuration * (growthStage + 1);
+    }
+
     public void UpdateGrowth(float currentGameTime)
     {
-        float elapsed = currentGameTime - plantedTime; // ore di gioco trascorse
-        int newStage = Mathf.FloorToInt((elapsed / growthTime) * plantData.growthStages.Length);
-        newStage = Mathf.Clamp(newStage, 0, plantData.growthStages.Length - 1);
+        if (currentGameTime < nextGrowthCheckTime)
+            return;
 
-        if (newStage != growthStage)
-        {
-            Debug.Log("Plant " + plantData.plantName + " advanced to stage " + newStage);
-            growthStage = newStage;
-            UpdateVisual();
-        }
+        growthStage++;
+
+        if (growthStage >= plantData.growthStages.Length)
+            return;
+
+        UpdateVisual();
+
+        ScheduleNextGrowth();
     }
 
     void UpdateVisual()
@@ -67,7 +80,8 @@ public class Plant : MonoBehaviour
         if (plantData.regrows)
         {
             // la pianta torna a uno stato prima della maturità
-            plantedTime = currentGameTime - (growthTime - plantData.regrowDays * 24f);
+            float regrowTime = plantData.GetRegrowTimeMinutes();
+            plantedTime = currentGameTime - (growthTime - regrowTime);
         }
         else
         {

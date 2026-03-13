@@ -15,9 +15,9 @@ MonoBehaviour:
   plantName: AlienPlant
   daysToGrow: 1
   growthStages:
-  - {fileID: 4303964344734327090, guid: 76ac61fcb199c4240b9913a329905dd1, type: 3}
-  - {fileID: 4543202818094533507, guid: 2e00610eb0cb52d4b88c1bf911e7b8ea, type: 3}
-  - {fileID: 6598320656225331606, guid: 552d3a2ec61464f47b7c9dbfcc666bdf, type: 3}
+  - {fileID: 2630425031254273193, guid: 62958d7fa7477fb4e8c00327286f111a, type: 3}
+  - {fileID: 5054277889059016994, guid: ba1ca28e770089747a753dca5ab7ceb5, type: 3}
+  - {fileID: 9218926353566358502, guid: 611079352ff5971429b081e7162376c7, type: 3}
   sellPrice: 10
   regrows: 0
   regrowDays: 0

@@ -348,6 +348,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1201030819}
     m_Modifications:
+    - target: {fileID: 5593195909017195343, guid: 4be7a99d429a19840a38df28f88a8680, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5593195909017195343, guid: 4be7a99d429a19840a38df28f88a8680, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5593195909017195379, guid: 4be7a99d429a19840a38df28f88a8680, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -392,7 +400,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: Stylized Astronaut
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5593195910366287653, guid: 4be7a99d429a19840a38df28f88a8680, type: 3}
+    - {fileID: 5593195910366287650, guid: 4be7a99d429a19840a38df28f88a8680, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -660,6 +670,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   speed: 5
+  turnSpeed: 400
 --- !u!136 &1201030817
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -727,7 +738,7 @@ CharacterController:
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 1, z: 0}
+  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!114 &1201030821
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -849,10 +860,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 214acff5cc8b7cb4aa48747d6c0ca877, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OurGame.Core.TimeManager
-  realSecondsPerGameHour: 5
+  realSecondsPerGameMinute: 2
+  minutesPerHour: 60
   hoursPerDay: 24
   currentDay: 1
   currentHour: 6
+  currentMinute: 0
 --- !u!4 &1415509784
 Transform:
   m_ObjectHideFlags: 0

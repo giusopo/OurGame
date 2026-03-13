@@ -519,7 +519,7 @@ PrefabInstance:
     - target: {fileID: 6216543643559084633, guid: 51d1696ac90e56e468fcab5fa696488d, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 726521af93996b343880bcea7790f4f5, type: 2}
+      objectReference: {fileID: 2100000, guid: 366a8a56d09c8174ebf0df1872e5b7bb, type: 2}
     - target: {fileID: 7263623146951188175, guid: 51d1696ac90e56e468fcab5fa696488d, type: 3}
       propertyPath: m_Name
       value: Dirt

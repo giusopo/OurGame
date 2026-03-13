@@ -670,7 +670,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   speed: 5
-  turnSpeed: 400
 --- !u!136 &1201030817
 CapsuleCollider:
   m_ObjectHideFlags: 0

@@ -14,14 +14,14 @@ public class PlayerInteraction : MonoBehaviour
 
         if (value.isPressed && currentTile != null)
         {
-            float currentGameTime = TimeManager.Instance.GetCurrentTimeInMinutes();
+           long currentTick = TimeManager.Instance.CurrentTick;
 
             Debug.Log("Interagisci con il tile!");
 
             if (currentTile.IsEmpty())
-                currentTile.PlantSeed(debugPlant, currentGameTime);
+                currentTile.PlantSeed(debugPlant, currentTick);
             else
-                currentTile.Harvest(currentGameTime);
+                currentTile.Harvest(currentTick);
         }
     }
 

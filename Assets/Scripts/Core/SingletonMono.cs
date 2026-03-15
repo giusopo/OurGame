@@ -38,5 +38,11 @@ namespace OurGame.Core
                 Destroy(gameObject);
             }
         }
+
+        public static bool TryGetInstance(out T instance)
+        {
+            instance = _instance;
+            return instance != null;
+        }
     }
 }

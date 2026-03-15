@@ -21,13 +21,13 @@ public class PlantData : ScriptableObject
     public int regrowHours;
     public int regrowMinutes;
 
-    public float GetGrowthTimeMinutes()
+    public long GetGrowthTimeTicks()
     {
-        return growDays * 1440f + growHours * 60f + growMinutes;
+        return growDays * 1440L + growHours * 60L + growMinutes;
     }
 
-    public float GetRegrowTimeMinutes()
+    public long GetRegrowTimeTicks()
     {
-        return regrowDays * 1440f + regrowHours * 60f + regrowMinutes;
+        return regrowDays * 1440L + regrowHours * 60L + regrowMinutes;
     }
 }

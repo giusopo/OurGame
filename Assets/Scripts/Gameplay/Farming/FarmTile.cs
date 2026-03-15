@@ -9,7 +9,7 @@ public class FarmTile : MonoBehaviour
         return currentPlant == null;
     }
 
-    public void PlantSeed(PlantData plantData, float currentGameTime)
+    public void PlantSeed(PlantData plantData, long currentTick)
     {
         if (!IsEmpty())
             return;
@@ -18,19 +18,19 @@ public class FarmTile : MonoBehaviour
         plantGO.transform.position = transform.position;
 
         Plant plant = plantGO.AddComponent<Plant>();
-        plant.PlantSeed(plantData, currentGameTime);
+        plant.PlantSeed(plantData, currentTick);
 
         currentPlant = plant;
     }
 
-    public void Harvest(float currentGameTime)
+    public void Harvest(long currentTick)
     {
         if (currentPlant == null)
             return;
 
-        if (currentPlant.IsReadyToHarvest(currentGameTime))
+        if (currentPlant.IsReadyToHarvest(currentTick))
         {
-            currentPlant.Harvest(currentGameTime);
+            currentPlant.Harvest(currentTick);
             currentPlant = null;
         }
     }

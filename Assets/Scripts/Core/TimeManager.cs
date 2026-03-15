@@ -20,7 +20,7 @@ public class TimeManager : SingletonMono<TimeManager>
     {
         tickTimer += Time.deltaTime;
 
-        if (tickTimer >= realSecondsPerTick)
+        while (tickTimer >= realSecondsPerTick)
         {
             tickTimer -= realSecondsPerTick;
             AdvanceTick();

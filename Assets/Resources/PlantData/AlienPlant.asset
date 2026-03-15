@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4f33b363f709e04eabce8db90edebda, type: 3}
   m_Name: AlienPlant
   m_EditorClassIdentifier: Assembly-CSharp::PlantData
-  plantName: AlienPlant
-  growDays: 0
-  growHours: 0
-  growMinutes: 5
+  plantId: alienP_001
+  plantPrefab: {fileID: 8905916130324818803, guid: f57a3279fda57c0478d5ed9c5d95a35a, type: 3}
   growthStages:
   - {fileID: 2630425031254273193, guid: 62958d7fa7477fb4e8c00327286f111a, type: 3}
   - {fileID: 5054277889059016994, guid: ba1ca28e770089747a753dca5ab7ceb5, type: 3}
   - {fileID: 9218926353566358502, guid: 611079352ff5971429b081e7162376c7, type: 3}
+  growDays: 0
+  growHours: 0
+  growMinutes: 5
   sellPrice: 10
   regrows: 1
   regrowDays: 0

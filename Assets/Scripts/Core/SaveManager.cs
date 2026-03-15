@@ -27,7 +27,7 @@ namespace OurGame.Core
             {
                 data.plants.Add(new PlantSaveData
                 {
-                    plantDataName = plant.plantData.name,
+                    plantId = plant.plantData.plantId,
                     plantedTick = plant.PlantTick,
                     growthStage = plant.GrowthStage,
                     position = plant.transform.position
@@ -41,7 +41,6 @@ namespace OurGame.Core
 
         public void LoadGame()
         {
-
             Debug.Log("Loading game from: " + saveFile);
 
             if (!File.Exists(saveFile))
@@ -61,25 +60,32 @@ namespace OurGame.Core
                 Destroy(plant.gameObject);
 
             // Ricrea le piante
-            foreach (var plantData in data.plants)
+            foreach (PlantSaveData plantData in data.plants)
             {
+                PlantData pData = PlantDatabase.Instance.GetPlant(plantData.plantId);
 
-                Debug.Log("sono nel foreach");
-                PlantData pData = Resources.Load<PlantData>("PlantData/" + plantData.plantDataName);
                 if (pData == null)
                 {
                     Debug.Log("pData è null");
-                    Debug.LogWarning("PlantData not found: " + plantData.plantDataName);
+                    Debug.LogWarning("PlantData not found in database: " + plantData.plantId);
                     continue;
                 }
 
-                GameObject plantGO = new GameObject("Plant_" + pData.plantName);
-                plantGO.transform.position = plantData.position;
+                Debug.Log("creo pianta: " + plantData.plantId + " at position " + plantData.position);
 
-                Debug.Log("creo pianta: " + plantData.plantDataName + " at position " + plantData.position);
+                GameObject plantGO = Instantiate(
+                    pData.plantPrefab,
+                    plantData.position,
+                    Quaternion.identity
+                );
 
-                Plant plant = plantGO.AddComponent<Plant>();
-                plant.RestorePlant(pData, plantData.plantedTick, plantData.growthStage);
+                Plant plant = plantGO.GetComponent<Plant>();
+
+                plant.RestorePlant(
+                    pData, 
+                    plantData.plantedTick, 
+                    plantData.growthStage
+                );
             }
 
             Debug.Log("Game Loaded!");

@@ -3,20 +3,25 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Farming/Plant Data")]
 public class PlantData : ScriptableObject
 {
-    public string plantName;
+    [Header("Identification")]
+    public string plantId; // ID univoco usato per save/load
+
+    [Header("Prefab")]
+    public GameObject plantPrefab; // prefab principale della pianta
+
+    [Header("Growth")]
+    public GameObject[] growthStages;
 
     [Header("Growth Time")]
     public int growDays;
     public int growHours;
     public int growMinutes;
 
-    public GameObject[] growthStages;
-
+    [Header("Economy")]
     public int sellPrice;
 
+    [Header("Regrow")]
     public bool regrows;
-
-    [Header("Regrow Time")]
     public int regrowDays;
     public int regrowHours;
     public int regrowMinutes;

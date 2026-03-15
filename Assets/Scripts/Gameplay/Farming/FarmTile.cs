@@ -14,15 +14,19 @@ public class FarmTile : MonoBehaviour
         if (!IsEmpty())
             return;
 
-        GameObject plantGO = new GameObject("Plant");
-        plantGO.transform.position = transform.position;
+        GameObject plantGO = Instantiate(
+            plantData.plantPrefab,
+            transform.position,
+            Quaternion.identity,
+            transform
+        );
 
-        Plant plant = plantGO.AddComponent<Plant>();
+        Plant plant = plantGO.GetComponent<Plant>();
+
         plant.PlantSeed(plantData, currentTick);
 
         currentPlant = plant;
     }
-
     public void Harvest(long currentTick)
     {
         if (currentPlant == null)

@@ -24,6 +24,8 @@ public class Plant : MonoBehaviour
         UpdateVisual();
         ScheduleNextGrowth();
 
+        Debug.Log($"Planted {plantData.plantId} at tick {plantedTick}, growthTime={growthTime} ticks");
+
         PlantManager.Instance.RegisterPlant(this);
     }
 
@@ -31,7 +33,12 @@ public class Plant : MonoBehaviour
     {
         plantData = data;
         plantedTick = savedPlantedTick;
-        growthStage = savedGrowthStage;
+        // Assicura che lo stage di crescita sia valido
+        growthStage = Mathf.Clamp(
+            savedGrowthStage,
+            0,
+            plantData.growthStages.Length - 1
+        );
 
         growthTime = plantData.GetGrowthTimeTicks();
 
@@ -50,13 +57,14 @@ public class Plant : MonoBehaviour
         int stages = plantData.growthStages.Length;
         if (growthStage >= stages) return;
 
-        long stageDuration = growthTime / stages;
+        long stageDuration = Mathf.CeilToInt((float)growthTime / stages);
         long nextTick = plantedTick + stageDuration * (growthStage + 1);
 
         // cancella l'event precedente se esiste
         if (growthEvent != null)
             growthEvent.Cancel();
 
+        Debug.Log($"Scheduling growth for {plantData.plantId} at tick {nextTick}, growthStage={growthStage}");
         growthEvent = GameEventScheduler.Instance.Schedule(nextTick, ProcessGrowthEvent);
     }
 
@@ -99,7 +107,7 @@ public class Plant : MonoBehaviour
         if (!IsReadyToHarvest(currentTick))
             return;
 
-        Debug.Log("Collected " + plantData.plantName);
+        Debug.Log("Collected " + plantData.plantId);
 
         if (plantData.regrows)
         {

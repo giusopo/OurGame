@@ -1,44 +1,45 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
 {
-    [Header("Movement Settings")]
     public float speed = 5f;
-    public float rotationSpeed = 100f; // gradi al secondo per ruotare
+    public float rotationSpeed = 100f;
 
-    private CharacterController controller;
+    private Rigidbody rb;
     private Animator anim;
-    private Vector2 moveInput;
 
-    void Start()
+    float moveForward;
+    float turn;
+
+    void Awake()
     {
-        controller = GetComponent<CharacterController>();
+        rb = GetComponent<Rigidbody>();
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
         anim = GetComponentInChildren<Animator>();
     }
 
     void Update()
     {
-        // Movimento in avanti/indietro relativo alla direzione del player
-        Vector3 forward = transform.forward;
-        Vector3 move = forward * moveInput.y; // solo asse Y del moveInput per avanti/indietro
+        moveForward = Input.GetAxis("Vertical");   // W S
+        turn = Input.GetAxis("Horizontal");        // A D
 
-        controller.Move(move * speed * Time.deltaTime);
-
-        // Rotazione solo asse X del moveInput (A/D o frecce)
-        if (moveInput.x != 0)
-        {
-            transform.Rotate(Vector3.up, moveInput.x * rotationSpeed * Time.deltaTime);
-        }
-
-        // Animazioni
-        anim.SetInteger("AnimationPar", moveInput.y != 0 ? 1 : 0);
+        if (Mathf.Abs(moveForward) > 0.1f)
+            anim.SetInteger("AnimationPar", 1);
+        else
+            anim.SetInteger("AnimationPar", 0);
     }
 
-    // Input System
-    public void OnMove(InputValue value)
+    void FixedUpdate()
     {
-        moveInput = value.Get<Vector2>();
+        // Movimento avanti / indietro
+        Vector3 move = transform.forward * moveForward * speed * Time.fixedDeltaTime;
+        rb.MovePosition(rb.position + move);
+
+        // Rotazione SOLO con A/D
+        float rotation = turn * rotationSpeed * Time.fixedDeltaTime;
+        Quaternion deltaRotation = Quaternion.Euler(0, rotation, 0);
+        rb.MoveRotation(rb.rotation * deltaRotation);
     }
 }

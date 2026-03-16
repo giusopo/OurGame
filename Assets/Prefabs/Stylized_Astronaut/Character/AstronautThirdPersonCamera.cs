@@ -1,43 +1,53 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-namespace AstronautThirdPersonCamera
+public class AstronautThirdPersonCamera : MonoBehaviour
 {
+    public Transform target;
 
-  public class AstronautThirdPersonCamera : MonoBehaviour
-  {
-    private const float Y_ANGLE_MIN = 0.0f;
-    private const float Y_ANGLE_MAX = 50.0f;
+    public float distance = 4.5f;
 
-    public Transform lookAt;
-    public Transform camTransform;
-    public float distance = 5.0f;
+    public float mouseSensitivity = 120f;
+    public float keyboardRotationSpeed = 90f;
 
-    private float currentX = 0.0f;
-    private float currentY = 45.0f;
-    private float sensitivityX = 20.0f;
-    private float sensitivityY = 20.0f;
+    public float minPitch = -20f;
+    public float maxPitch = 60f;
 
-    private void Start()
+    public float followSmooth = 10f;
+
+    float yaw;
+    float pitch = 20f;
+
+    void LateUpdate()
     {
-        camTransform = transform;
-    }
+        if (!target) return;
 
-    private void Update()
-    {
-        currentX += Input.GetAxis("Mouse X");
-        currentY += Input.GetAxis("Mouse Y");
+        // --- MOUSE ROTATION ---
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
-        currentY = Mathf.Clamp(currentY, Y_ANGLE_MIN, Y_ANGLE_MAX);
-    }
+        yaw += mouseX;
+        pitch -= mouseY;
 
-    private void LateUpdate()
-    {
-        Vector3 dir = new Vector3(0, 0, -distance);
-        Quaternion rotation = Quaternion.Euler(currentY, currentX, 0);
-        camTransform.position = lookAt.position + rotation * dir;
-        camTransform.LookAt(lookAt.position);
+        // --- KEYBOARD ROTATION (Q/E) ---
+        if (Input.GetKey(KeyCode.Q))
+            yaw -= keyboardRotationSpeed * Time.deltaTime;
+
+        if (Input.GetKey(KeyCode.E))
+            yaw += keyboardRotationSpeed * Time.deltaTime;
+
+        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+
+        Quaternion rotation = Quaternion.Euler(pitch, yaw, 0);
+
+        Vector3 desiredPosition =
+            target.position - rotation * Vector3.forward * distance;
+
+        transform.position = Vector3.Lerp(
+            transform.position,
+            desiredPosition,
+            followSmooth * Time.deltaTime
+        );
+
+        transform.LookAt(target.position);
     }
-  }
 }

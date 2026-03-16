@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 namespace OurGame.Core
 {
@@ -14,8 +15,9 @@ namespace OurGame.Core
 
         private long lastSaveTick = 0;
 
-        private void Start()
+        IEnumerator Start()
         {
+            yield return null; // aspetta un frame per assicurarsi che tutto sia inizializzato
             // Carica il gioco all'avvio
             SaveManager.Instance.LoadGame();
 

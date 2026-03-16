@@ -1,18 +1,17 @@
 using UnityEngine;
+using OurGame.Core;
 
 public class FarmTile : MonoBehaviour
 {
+    public Vector2Int GridPosition; // posizione relativa alla griglia
     public Plant currentPlant;
+    public FarmTileGrid ParentGrid;
 
-    public bool IsEmpty()
-    {
-        return currentPlant == null;
-    }
+    public bool IsEmpty() => currentPlant == null;
 
     public void PlantSeed(PlantData plantData, long currentTick)
     {
-        if (!IsEmpty())
-            return;
+        if (!IsEmpty()) return;
 
         GameObject plantGO = Instantiate(
             plantData.plantPrefab,
@@ -22,20 +21,9 @@ public class FarmTile : MonoBehaviour
         );
 
         Plant plant = plantGO.GetComponent<Plant>();
-
-        plant.PlantSeed(plantData, currentTick);
-
+        plant.PlantSeed(plantData, currentTick, this);
         currentPlant = plant;
     }
-    public void Harvest(long currentTick)
-    {
-        if (currentPlant == null)
-            return;
 
-        if (currentPlant.IsReadyToHarvest(currentTick))
-        {
-            currentPlant.Harvest(currentTick);
-            currentPlant = null;
-        }
-    }
+    public void RemovePlant() => currentPlant = null;
 }

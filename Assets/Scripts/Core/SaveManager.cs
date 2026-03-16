@@ -30,7 +30,8 @@ namespace OurGame.Core
                     plantId = plant.plantData.plantId,
                     plantedTick = plant.PlantTick,
                     growthStage = plant.GrowthStage,
-                    position = plant.transform.position
+                    tilePosition = plant.Tile.GridPosition,
+                    gridId = plant.Tile.ParentGrid.gridId
                 });
             }
 
@@ -71,21 +72,33 @@ namespace OurGame.Core
                     continue;
                 }
 
-                Debug.Log("creo pianta: " + plantData.plantId + " at position " + plantData.position);
+                Debug.Log("Restoring plant: " + plantData.plantId + " at grid " + plantData.gridId + " tile " + plantData.tilePosition);
+                FarmTileGrid grid = FarmGridManager.Instance.GetGrid(plantData.gridId);
+                FarmTile tile = grid?.GetTile(plantData.tilePosition);
 
                 GameObject plantGO = Instantiate(
                     pData.plantPrefab,
-                    plantData.position,
-                    Quaternion.identity
+                    tile.transform.position,
+                    Quaternion.identity,
+                    tile.transform
                 );
 
                 Plant plant = plantGO.GetComponent<Plant>();
 
+                if (plant == null)
+                {
+                    Debug.Log("Plant prefab missing Plant component: " + pData.plantId);
+                    continue;
+                }
+
                 plant.RestorePlant(
-                    pData, 
-                    plantData.plantedTick, 
-                    plantData.growthStage
+                    pData,
+                    plantData.plantedTick,
+                    plantData.growthStage,
+                    tile
                 );
+
+                tile.currentPlant = plant;
             }
 
             Debug.Log("Game Loaded!");

@@ -5,40 +5,53 @@ using OurGame.Core;
 public class PlayerInteraction : MonoBehaviour
 {
     public PlantData debugPlant;
-    private FarmTile currentTile; // tile su cui il player si trova
 
-    // Input System
+    private FarmTile currentTile;
+
     public void OnInteract(InputValue value)
     {
-        Debug.Log("Input Interact: " + value.isPressed);
+        if (!value.isPressed || currentTile == null)
+            return;
 
-        if (value.isPressed && currentTile != null)
+        long currentTick = TimeManager.Instance.CurrentTick;
+
+        Debug.Log("Interagisci con la tile: " + currentTile.GridPosition);
+
+        // Pianta seed
+        if (currentTile.IsEmpty())
         {
-           long currentTick = TimeManager.Instance.CurrentTick;
+            currentTile.PlantSeed(debugPlant, currentTick);
+        }
+        else
+        {
+            Plant plant = currentTile.currentPlant;
 
-            Debug.Log("Interagisci con il tile!");
-
-            if (currentTile.IsEmpty())
-                currentTile.PlantSeed(debugPlant, currentTick);
+            if (plant != null && plant.IsReadyToHarvest(currentTick))
+            {
+                plant.Harvest(currentTick);
+            }
             else
-                currentTile.Harvest(currentTick);
+            {
+                Debug.Log("La pianta non è pronta.");
+            }
         }
     }
 
-    // Triggers per rilevare la tile sotto il player
     private void OnTriggerEnter(Collider other)
     {
         FarmTile tile = other.GetComponent<FarmTile>();
+
         if (tile != null)
         {
             currentTile = tile;
-            Debug.Log("Player sopra FarmTile");
+            Debug.Log("Player entrato in FarmTile: " + tile.ParentGrid.gridId + " Posizione: " + tile.GridPosition);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
         FarmTile tile = other.GetComponent<FarmTile>();
+
         if (tile != null && tile == currentTile)
         {
             currentTile = null;

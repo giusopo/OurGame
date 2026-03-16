@@ -4,19 +4,25 @@ using OurGame.Core;
 public class Plant : MonoBehaviour
 {
     private GameObject currentVisual;
+
     public PlantData plantData;
+
+    public FarmTile Tile { get; private set; }
+
     public long PlantTick => plantedTick;
     public int GrowthStage => growthStage;
-    private long plantedTick;          // tick di piantagione
-    private long growthTime;           // tempo totale in tick per maturazione
+
+    private long plantedTick;
+    private long growthTime;
     private int growthStage = 0;
 
-    private ScheduledEvent growthEvent; // riferimento all'evento schedulato
+    private ScheduledEvent growthEvent;
 
-    public void PlantSeed(PlantData data, long currentTick)
+    public void PlantSeed(PlantData data, long currentTick, FarmTile tile)
     {
         plantData = data;
         plantedTick = currentTick;
+        Tile = tile;
 
         growthTime = plantData.GetGrowthTimeTicks();
         growthStage = 0;
@@ -24,16 +30,18 @@ public class Plant : MonoBehaviour
         UpdateVisual();
         ScheduleNextGrowth();
 
-        Debug.Log($"Planted {plantData.plantId} at tick {plantedTick}, growthTime={growthTime} ticks");
+        Debug.Log($"Planted {plantData.plantId} at tick {plantedTick}, growthTime={growthTime}");
 
+        Debug.Log("Spawning plant prefab: " + plantData.plantPrefab);
         PlantManager.Instance.RegisterPlant(this);
     }
 
-    public void RestorePlant(PlantData data, long savedPlantedTick, int savedGrowthStage)
+    public void RestorePlant(PlantData data, long savedPlantedTick, int savedGrowthStage, FarmTile tile)
     {
         plantData = data;
         plantedTick = savedPlantedTick;
-        // Assicura che lo stage di crescita sia valido
+        Tile = tile;
+
         growthStage = Mathf.Clamp(
             savedGrowthStage,
             0,
@@ -42,13 +50,12 @@ public class Plant : MonoBehaviour
 
         growthTime = plantData.GetGrowthTimeTicks();
 
-        // Aggiorna la visuale corretta
         UpdateVisual();
 
-        // Schedula il prossimo stage solo se non è completamente cresciuta
         if (growthStage < plantData.growthStages.Length - 1)
             ScheduleNextGrowth();
 
+        Debug.Log("Spawning plant prefab: " + plantData.plantPrefab);
         PlantManager.Instance.RegisterPlant(this);
     }
 
@@ -60,11 +67,11 @@ public class Plant : MonoBehaviour
         long stageDuration = Mathf.CeilToInt((float)growthTime / stages);
         long nextTick = plantedTick + stageDuration * (growthStage + 1);
 
-        // cancella l'event precedente se esiste
         if (growthEvent != null)
             growthEvent.Cancel();
 
-        Debug.Log($"Scheduling growth for {plantData.plantId} at tick {nextTick}, growthStage={growthStage}");
+        Debug.Log($"Scheduling growth for {plantData.plantId} at tick {nextTick}, stage={growthStage}");
+
         growthEvent = GameEventScheduler.Instance.Schedule(nextTick, ProcessGrowthEvent);
     }
 
@@ -75,12 +82,11 @@ public class Plant : MonoBehaviour
         if (growthStage >= plantData.growthStages.Length)
         {
             growthStage = plantData.growthStages.Length - 1;
-            return; // ultima crescita raggiunta
+            return;
         }
 
         UpdateVisual();
 
-        // schedula il prossimo stage
         ScheduleNextGrowth();
     }
 
@@ -112,19 +118,23 @@ public class Plant : MonoBehaviour
         if (plantData.regrows)
         {
             long regrowTime = plantData.GetRegrowTimeTicks();
+
             plantedTick = currentTick - (growthTime - regrowTime);
 
             growthStage = 0;
+
             UpdateVisual();
             ScheduleNextGrowth();
         }
         else
         {
-            // cancella evento pendente per evitare zombie
             if (growthEvent != null)
                 growthEvent.Cancel();
 
+            Tile?.RemovePlant();
+
             PlantManager.Instance.UnregisterPlant(this);
+
             Destroy(gameObject);
         }
     }
@@ -133,6 +143,8 @@ public class Plant : MonoBehaviour
     {
         if (growthEvent != null)
             growthEvent.Cancel();
+
+        Tile?.RemovePlant();
 
         if (PlantManager.TryGetInstance(out var manager))
             manager.UnregisterPlant(this);

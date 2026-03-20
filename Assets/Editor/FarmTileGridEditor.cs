@@ -39,9 +39,9 @@ public class FarmTileGridEditor : Editor
             for (int y = 0; y < grid.height; y++)
             {
                 Vector3 pos = new Vector3(
-                    x * grid.tileSize,
+                    (x + 0.5f) * grid.tileSize,
                     0,
-                    y * grid.tileSize
+                    (y + 0.5f) * grid.tileSize
                 );
 
                 FarmTile tile = (FarmTile)PrefabUtility.InstantiatePrefab(grid.tilePrefab);

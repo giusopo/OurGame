@@ -84,7 +84,11 @@ namespace OurGame.Core
         public Vector3 GetWorldPosition(Vector2Int gridPos)
         {
             return transform.position +
-                new Vector3(gridPos.x * tileSize, 0, gridPos.y * tileSize);
+                new Vector3(
+                    (gridPos.x + 0.5f) * tileSize,
+                    0,
+                    (gridPos.y + 0.5f) * tileSize
+                );
         }
     }
 }

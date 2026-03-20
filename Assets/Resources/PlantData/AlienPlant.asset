@@ -22,7 +22,7 @@ MonoBehaviour:
   growHours: 0
   growMinutes: 5
   sellPrice: 10
-  regrows: 1
+  regrows: 0
   regrowDays: 0
   regrowHours: 0
   regrowMinutes: 0

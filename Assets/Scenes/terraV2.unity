@@ -1100,10 +1100,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -6722085885383957590, guid: cfcee82b274a41d4480ac38b9e2751a1, type: 3}
+      propertyPath: m_Intensity
+      value: 10000
+      objectReference: {fileID: 0}
     - target: {fileID: -5975645815192214457, guid: cfcee82b274a41d4480ac38b9e2751a1, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 9e42fc8ff15f87e4ab51f21d30251668, type: 2}
+    - target: {fileID: -447275898630060098, guid: cfcee82b274a41d4480ac38b9e2751a1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -13.43
+      objectReference: {fileID: 0}
+    - target: {fileID: -447275898630060098, guid: cfcee82b274a41d4480ac38b9e2751a1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 19.04
+      objectReference: {fileID: 0}
+    - target: {fileID: -447275898630060098, guid: cfcee82b274a41d4480ac38b9e2751a1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -4.62
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: cfcee82b274a41d4480ac38b9e2751a1, type: 3}
       propertyPath: m_Name
       value: 11070_astronaut_v4

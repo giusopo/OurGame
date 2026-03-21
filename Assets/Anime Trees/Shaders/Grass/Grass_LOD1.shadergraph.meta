@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: ad7d0f42bb11b0846ae796e91f4750cd
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 625f186215c104763be7675aa2d941aa, type: 3}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 276931
+  packageName: Anime Nature
+  packageVersion: 1.0
+  assetPath: Assets/Anime Trees/Shaders/Grass/Grass_LOD1.shadergraph
+  uploadId: 661955

@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 231093b74d3ab1341aa61c0ebb5d779d
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 60072b568d64c40a485e0fc55012dc9f, type: 3}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 276931
+  packageName: Anime Nature
+  packageVersion: 1.0
+  assetPath: Assets/Anime Trees/Shaders/Grass/MainLight.shadersubgraph
+  uploadId: 661955

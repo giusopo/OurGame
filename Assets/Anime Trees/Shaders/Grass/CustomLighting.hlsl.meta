@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 23c92d2936d6c554db4651369482a821
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 276931
+  packageName: Anime Nature
+  packageVersion: 1.0
+  assetPath: Assets/Anime Trees/Shaders/Grass/CustomLighting.hlsl
+  uploadId: 661955

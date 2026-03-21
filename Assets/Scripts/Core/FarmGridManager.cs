@@ -25,6 +25,12 @@ namespace OurGame.Core
             return grid;
         }
 
+        public void UnregisterGrid(FarmTileGrid grid)
+        {
+            if (grids.ContainsKey(grid.gridId))
+                grids.Remove(grid.gridId);
+        }
+
         public IEnumerable<FarmTileGrid> GetAllGrids() => grids.Values;
     }
 }

@@ -13,6 +13,9 @@ public class PlayerInteraction : MonoBehaviour
         if (!value.isPressed || currentTile == null)
             return;
 
+        if (InventorySystem.Instance.IsInventoryOpen)
+            return;
+
         long currentTick = TimeManager.Instance.CurrentTick;
 
         Debug.Log("Interagisci con la tile: " + currentTile.GridPosition);
@@ -20,7 +23,17 @@ public class PlayerInteraction : MonoBehaviour
         // Pianta seed
         if (currentTile.IsEmpty())
         {
-            currentTile.PlantSeed(debugPlant, currentTick);
+            PlantData selectedSeed = InventorySystem.Instance.GetSelectedItem() as PlantData;
+
+            if (selectedSeed != null)
+            {
+                currentTile.PlantSeed(selectedSeed, currentTick);
+                InventorySystem.Instance.TryConsumeSelectedItem(1);
+                return;
+            }
+
+            if (debugPlant != null)
+                currentTile.PlantSeed(debugPlant, currentTick);
         }
         else
         {

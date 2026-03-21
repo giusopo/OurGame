@@ -15,8 +15,10 @@ namespace OurGame.Core
             {
                 if (_instance == null)
                 {
-                    _instance = FindObjectsByType<T>(FindObjectsSortMode.None)[0];
-                    if (_instance == null)
+                    var objs = FindObjectsByType<T>(FindObjectsSortMode.None);
+                    if (objs.Length > 0)
+                        _instance = objs[0];
+                    else
                     {
                         GameObject go = new GameObject(typeof(T).Name);
                         _instance = go.AddComponent<T>();

@@ -20,8 +20,13 @@ public class CameraController : MonoBehaviour
 
     void LateUpdate()
     {
+        if (target == null)
+            return;
+
+        bool inventoryOpen = InventorySystem.Instance.IsInventoryOpen;
+
         // INPUT MOUSE (tasto destro premuto)
-        if (Input.GetMouseButton(1))
+        if (!inventoryOpen && Input.GetMouseButton(1))
         {
             float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
             float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
@@ -33,7 +38,7 @@ public class CameraController : MonoBehaviour
 
             targetYaw = currentYaw;
         }
-        else
+        else if (!inventoryOpen)
         {
             // ritorno graduale dietro al player (yaw)
             float playerYaw = target.eulerAngles.y;

@@ -12,6 +12,8 @@ namespace OurGame.Core
 
         protected override void Awake()
         {
+            base.Awake();
+
             plantDict = new Dictionary<string, PlantData>();
             foreach (var plant in allPlants)
             {

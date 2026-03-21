@@ -1,5 +1,6 @@
 using UnityEngine;
 using OurGame.Core;
+using OurGame.Core.Domain;
 
 public class Plant : MonoBehaviour
 {
@@ -8,29 +9,34 @@ public class Plant : MonoBehaviour
     public PlantData plantData;
 
     public FarmTile Tile { get; private set; }
+    public PlantState State => state;
 
-    public long PlantTick => plantedTick;
-    public int GrowthStage => growthStage;
+    public long PlantTick => state?.plantedTick ?? 0;
+    public int GrowthStage => state?.growthStage ?? 0;
 
-    private long plantedTick;
-    private long growthTime;
-    private int growthStage = 0;
+    private PlantState state;
 
     private ScheduledEvent growthEvent;
 
     public void PlantSeed(PlantData data, long currentTick, FarmTile tile)
     {
         plantData = data;
-        plantedTick = currentTick;
         Tile = tile;
 
-        growthTime = plantData.GetGrowthTimeTicks();
-        growthStage = 0;
+        state = new PlantState(
+            data.plantId,
+            currentTick,
+            data.GetGrowthTimeTicks(),
+            data.growthStages.Length,
+            data.regrows
+        );
 
         UpdateVisual();
         ScheduleNextGrowth();
 
-        Debug.Log($"Planted {plantData.plantId} at tick {plantedTick}, growthTime={growthTime}");
+        Debug.Log(
+            $"Planted {plantData.plantId} at tick {state.plantedTick}, growthTime={state.growthTime}"
+        );
 
         Debug.Log("Spawning plant prefab: " + plantData.plantPrefab);
         PlantManager.Instance.RegisterPlant(this);
@@ -38,21 +44,48 @@ public class Plant : MonoBehaviour
 
     public void RestorePlant(PlantData data, long savedPlantedTick, int savedGrowthStage, FarmTile tile)
     {
-        plantData = data;
-        plantedTick = savedPlantedTick;
-        Tile = tile;
+        PlantState restoredState = new PlantState(
+            data.plantId,
+            savedPlantedTick,
+            data.GetGrowthTimeTicks(),
+            data.growthStages.Length,
+            data.regrows
+        );
 
-        growthStage = Mathf.Clamp(
+        restoredState.growthStage = Mathf.Clamp(
             savedGrowthStage,
+            0,
+            data.growthStages.Length - 1
+        );
+
+        RestorePlant(data, restoredState, tile);
+    }
+
+    public void RestorePlant(PlantData data, PlantState restoredState, FarmTile tile)
+    {
+        if (restoredState == null)
+        {
+            Debug.LogError("Cannot restore plant from null state");
+            return;
+        }
+
+        plantData = data;
+        Tile = tile;
+        state = restoredState;
+
+        state.plantId = data.plantId;
+        state.growthTime = data.GetGrowthTimeTicks();
+        state.MaxStage = data.growthStages.Length;
+        state.regrows = data.regrows;
+        state.growthStage = Mathf.Clamp(
+            state.growthStage,
             0,
             plantData.growthStages.Length - 1
         );
 
-        growthTime = plantData.GetGrowthTimeTicks();
-
         UpdateVisual();
 
-        if (growthStage < plantData.growthStages.Length - 1)
+        if (!state.IsFullyGrown())
             ScheduleNextGrowth();
 
         Debug.Log("Spawning plant prefab: " + plantData.plantPrefab);
@@ -61,42 +94,44 @@ public class Plant : MonoBehaviour
 
     void ScheduleNextGrowth()
     {
-        int stages = plantData.growthStages.Length;
-        if (growthStage >= stages) return;
+        if (state == null || state.MaxStage <= 0 || state.IsFullyGrown())
+            return;
 
-        long stageDuration = Mathf.CeilToInt((float)growthTime / stages);
-        long nextTick = plantedTick + stageDuration * (growthStage + 1);
+        long nextTick = state.GetNextGrowthTick();
 
         if (growthEvent != null)
             growthEvent.Cancel();
 
-        Debug.Log($"Scheduling growth for {plantData.plantId} at tick {nextTick}, stage={growthStage}");
+        Debug.Log(
+            $"Scheduling growth for {plantData.plantId} at tick {nextTick}, stage={state.growthStage}"
+        );
 
         growthEvent = GameEventScheduler.Instance.Schedule(nextTick, ProcessGrowthEvent);
     }
 
     void ProcessGrowthEvent()
     {
-        growthStage++;
-
-        if (growthStage >= plantData.growthStages.Length)
-        {
-            growthStage = plantData.growthStages.Length - 1;
+        if (state == null)
             return;
-        }
+
+        state.AdvanceGrowth();
 
         UpdateVisual();
 
-        ScheduleNextGrowth();
+        if (!state.IsFullyGrown())
+            ScheduleNextGrowth();
     }
 
     void UpdateVisual()
     {
+        if (plantData == null || state == null || plantData.growthStages.Length == 0)
+            return;
+
         if (currentVisual != null)
             Destroy(currentVisual);
 
         currentVisual = Instantiate(
-            plantData.growthStages[growthStage],
+            plantData.growthStages[state.growthStage],
             transform.position,
             Quaternion.identity,
             transform
@@ -105,24 +140,26 @@ public class Plant : MonoBehaviour
 
     public bool IsReadyToHarvest(long currentTick)
     {
-        return (currentTick - plantedTick) >= growthTime;
+        return state != null && state.IsReadyToHarvest(currentTick);
     }
 
     public void Harvest(long currentTick)
     {
-        if (!IsReadyToHarvest(currentTick))
+        if (state == null || !state.IsReadyToHarvest(currentTick))
             return;
+
+        int harvestAmount = Mathf.Max(1, plantData.harvestYield);
+        if (!InventorySystem.Instance.TryAddItem(plantData, harvestAmount))
+        {
+            Debug.Log("Inventario pieno: raccolto annullato.");
+            return;
+        }
 
         Debug.Log("Collected " + plantData.plantId);
 
         if (plantData.regrows)
         {
-            long regrowTime = plantData.GetRegrowTimeTicks();
-
-            plantedTick = currentTick - (growthTime - regrowTime);
-
-            growthStage = 0;
-
+            state.Harvest(currentTick, plantData.GetRegrowTimeTicks());
             UpdateVisual();
             ScheduleNextGrowth();
         }
@@ -130,10 +167,6 @@ public class Plant : MonoBehaviour
         {
             if (growthEvent != null)
                 growthEvent.Cancel();
-
-            Tile?.RemovePlant();
-
-            PlantManager.Instance.UnregisterPlant(this);
 
             Destroy(gameObject);
         }
@@ -144,7 +177,8 @@ public class Plant : MonoBehaviour
         if (growthEvent != null)
             growthEvent.Cancel();
 
-        Tile?.RemovePlant();
+        if (Tile != null && Tile.currentPlant == this)
+            Tile.RemovePlant();
 
         if (PlantManager.TryGetInstance(out var manager))
             manager.UnregisterPlant(this);

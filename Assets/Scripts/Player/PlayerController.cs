@@ -24,6 +24,16 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (InventorySystem.Instance.IsInventoryOpen)
+        {
+            moveForward = 0f;
+            turn = 0f;
+            speed = 0f;
+            anim.SetInteger("Movimento", 0);
+            anim.SetFloat("Rotazione", 0f);
+            return;
+        }
+
         moveForward = Input.GetAxis("Vertical");
         turn = Input.GetAxis("Horizontal");
 
@@ -65,6 +75,9 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (InventorySystem.Instance.IsInventoryOpen)
+            return;
+
         // movimento orizzontale stabile
         Vector3 forward = transform.forward;
         forward.y = 0;

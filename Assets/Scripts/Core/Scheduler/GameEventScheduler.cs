@@ -5,6 +5,8 @@ namespace OurGame.Core
 {
     public class GameEventScheduler : SingletonMono<GameEventScheduler>
     {
+        [SerializeField] private int maxEventsPerFrame = 100;
+
         private PriorityQueue<ScheduledEvent, long> queue =
             new PriorityQueue<ScheduledEvent, long>();
 
@@ -18,8 +20,9 @@ namespace OurGame.Core
         void Update()
         {
             long currentTick = TimeManager.Instance.CurrentTick;
+            int processedEvents = 0;
 
-            while (queue.Count > 0)
+            while (queue.Count > 0 && processedEvents < maxEventsPerFrame)
             {
                 if (!queue.TryPeek(out var ev, out var tick))
                     return;
@@ -28,6 +31,7 @@ namespace OurGame.Core
                     return;
 
                 queue.Dequeue();
+                processedEvents++;
 
                 if (!ev.cancelled)
                     ev.action?.Invoke();

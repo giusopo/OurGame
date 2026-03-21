@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using OurGame.Core.Domain;
 
 namespace OurGame.Core
 {
@@ -18,18 +19,56 @@ namespace OurGame.Core
         public Color gridColor = Color.green;
 
         public FarmTile tilePrefab;
+        private FarmGridState state;
 
         private Dictionary<Vector2Int, FarmTile> tiles =
             new Dictionary<Vector2Int, FarmTile>();
 
+        public FarmGridState State => state;
+        public bool IsRuntimeCreated { get; private set; }
+
         void Awake()
         {
-            FarmTile[] allTiles = GetComponentsInChildren<FarmTile>(true);
+            if (string.IsNullOrWhiteSpace(gridId) || width <= 0 || height <= 0)
+                return;
 
+            InitializeGrid(new FarmGridState(gridId, width, height));
+        }
+
+        public void ApplyState(FarmGridState newState)
+        {
+            if (newState == null)
+                newState = new FarmGridState(gridId, width, height);
+
+            InitializeGrid(newState);
+        }
+
+        public void InitializeRuntimeGrid(
+            string newGridId,
+            int newWidth,
+            int newHeight,
+            float newTileSize,
+            Vector3 worldPosition,
+            FarmTile runtimeTilePrefab
+        )
+        {
+            gridId = newGridId;
+            width = newWidth;
+            height = newHeight;
+            tileSize = newTileSize;
+            tilePrefab = runtimeTilePrefab;
+            transform.position = worldPosition;
+            IsRuntimeCreated = true;
+
+            InitializeGrid(new FarmGridState(gridId, width, height));
+        }
+
+        private void CacheTiles()
+        {
+            tiles.Clear();
+            FarmTile[] allTiles = GetComponentsInChildren<FarmTile>(true);
             foreach (var tile in allTiles)
             {
-                tile.ParentGrid = this;
-
                 if (tiles.ContainsKey(tile.GridPosition))
                 {
                     Debug.LogError(
@@ -40,12 +79,107 @@ namespace OurGame.Core
 
                 tiles[tile.GridPosition] = tile;
             }
+        }
+
+        private void InitializeGrid(FarmGridState newState)
+        {
+            state = newState;
+            gridId = state.gridId;
+            width = state.width;
+            height = state.height;
+
+            CacheTiles();
+            EnsureRuntimeTilesMatchState();
+            BindTilesToState();
+            RegisterIfNeeded();
+
+            if (tiles.Count != width * height)
+            {
+                Debug.LogWarning(
+                    $"Grid {gridId} mismatch: expected {width * height}, found {tiles.Count}"
+                );
+            }
+        }
+
+        private void EnsureRuntimeTilesMatchState()
+        {
+            if (tiles.Count == width * height)
+                return;
+
+            if (tilePrefab == null)
+            {
+                Debug.LogWarning("Cannot rebuild grid without tilePrefab: " + gridId);
+                return;
+            }
+
+            RebuildRuntimeTiles();
+            CacheTiles();
+        }
+
+        private void RebuildRuntimeTiles()
+        {
+            List<Transform> childrenToRemove = new List<Transform>();
+            for (int i = 0; i < transform.childCount; i++)
+                childrenToRemove.Add(transform.GetChild(i));
+
+            foreach (Transform child in childrenToRemove)
+                DestroyImmediate(child.gameObject);
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    FarmTile tile = Instantiate(tilePrefab, transform);
+                    tile.transform.localPosition = new Vector3(
+                        (x + 0.5f) * tileSize,
+                        0f,
+                        (y + 0.5f) * tileSize
+                    );
+                    tile.GridPosition = new Vector2Int(x, y);
+                    tile.name = $"Tile_{x}_{y}";
+                }
+            }
+        }
+
+        private void BindTilesToState()
+        {
+            foreach (var tile in tiles.Values)
+            {
+                var tileState = state.GetTile(tile.GridPosition);
+                if (tileState == null)
+                {
+                    Debug.LogWarning(
+                        $"Tile {tile.GridPosition} in grid {gridId} has no matching domain state"
+                    );
+                }
+
+                tile.Initialize(tileState, this);
+            }
+        }
+
+        private void RegisterIfNeeded()
+        {
+            FarmTileGrid registeredGrid = FarmGridManager.Instance.GetGrid(gridId);
+            if (registeredGrid == this)
+                return;
+
+            if (registeredGrid != null)
+            {
+                Debug.LogError("Duplicate grid registration attempted: " + gridId);
+                return;
+            }
 
             FarmGridManager.Instance.RegisterGrid(this);
         }
 
         public FarmTile GetTile(Vector2Int pos)
         {
+            if (pos.x < 0 || pos.x >= width || pos.y < 0 || pos.y >= height)
+            {
+                Debug.LogWarning($"Out of bounds tile: {pos}");
+                return null;
+            }
+
             tiles.TryGetValue(pos, out var tile);
             return tile;
         }
@@ -89,6 +223,12 @@ namespace OurGame.Core
                     0,
                     (gridPos.y + 0.5f) * tileSize
                 );
+        }
+
+        void OnDestroy()
+        {
+            if (FarmGridManager.TryGetInstance(out var manager))
+                manager.UnregisterGrid(this);
         }
     }
 }

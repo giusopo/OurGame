@@ -20,19 +20,20 @@ public class AstronautThirdPersonCamera : MonoBehaviour
     void LateUpdate()
     {
         if (!target) return;
+        bool inventoryOpen = InventorySystem.Instance.IsInventoryOpen;
 
         // --- MOUSE ROTATION ---
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        float mouseX = inventoryOpen ? 0f : Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        float mouseY = inventoryOpen ? 0f : Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
         yaw += mouseX;
         pitch -= mouseY;
 
         // --- KEYBOARD ROTATION (Q/E) ---
-        if (Input.GetKey(KeyCode.Q))
+        if (!inventoryOpen && Input.GetKey(KeyCode.Q))
             yaw -= keyboardRotationSpeed * Time.deltaTime;
 
-        if (Input.GetKey(KeyCode.E))
+        if (!inventoryOpen && Input.GetKey(KeyCode.E))
             yaw += keyboardRotationSpeed * Time.deltaTime;
 
         pitch = Mathf.Clamp(pitch, minPitch, maxPitch);

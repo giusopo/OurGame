@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Farming/Plant Data")]
-public class PlantData : ScriptableObject
+public class PlantData : InventoryItemDefinition
 {
     [Header("Identification")]
     public string plantId; // ID univoco usato per save/load
@@ -19,12 +19,15 @@ public class PlantData : ScriptableObject
 
     [Header("Economy")]
     public int sellPrice;
+    [Min(1)] public int harvestYield = 1;
 
     [Header("Regrow")]
     public bool regrows;
     public int regrowDays;
     public int regrowHours;
     public int regrowMinutes;
+
+    public override string ItemId => plantId;
 
     public long GetGrowthTimeTicks()
     {

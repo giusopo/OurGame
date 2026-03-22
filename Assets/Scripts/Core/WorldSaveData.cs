@@ -31,6 +31,7 @@ namespace OurGame.Core
     public class FarmTileSaveData
     {
         public Vector2Int position;
+        public bool hasPlant = true;
         public OurGame.Core.Domain.PlantState plant;
     }
 }

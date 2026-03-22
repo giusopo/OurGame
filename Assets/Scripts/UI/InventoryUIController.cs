@@ -8,27 +8,48 @@ using OurGame.Core;
 
 public class InventoryUIController : SingletonMono<InventoryUIController>
 {
+    [Header("Scene References")]
+    [SerializeField] private RectTransform canvasRect;
+    [SerializeField] private RectTransform inventoryOverlay;
+    [SerializeField] private RectTransform hotbarRoot;
+    [SerializeField] private RectTransform cursorRoot;
+    [SerializeField] private Transform inventoryGridRoot;
+    [SerializeField] private Transform hotbarRowRoot;
+    [SerializeField] private Text selectedItemText;
+    [SerializeField] private InventorySlotView cursorSlotView;
+    [SerializeField] private Vector2 cursorDragOffset = Vector2.zero;
+
     private readonly List<InventorySlotView> inventorySlotViews = new List<InventorySlotView>();
     private readonly List<InventorySlotView> hotbarSlotViews = new List<InventorySlotView>();
 
     private InventorySystem inventorySystem;
-    private Font uiFont;
+    private bool referencesBound;
+    private bool dragInProgress;
+    private InventorySection dragOriginSection;
+    private int dragOriginIndex = -1;
 
-    private Canvas canvas;
-    private RectTransform canvasRect;
-    private RectTransform inventoryOverlay;
-    private RectTransform inventoryPanel;
-    private RectTransform hotbarRoot;
-    private RectTransform cursorRoot;
-    private InventorySlotView cursorSlotView;
-    private Text selectedItemText;
-    private bool built;
+    void Reset()
+    {
+        AutoAssignSceneReferences();
+    }
+
+    void OnValidate()
+    {
+        AutoAssignSceneReferences();
+    }
 
     protected override void Awake()
     {
         base.Awake();
         EnsureEventSystem();
-        BuildUiIfNeeded();
+        AutoAssignSceneReferences();
+        CacheSceneReferences();
+
+        if (Application.isPlaying && inventoryOverlay != null)
+            inventoryOverlay.gameObject.SetActive(false);
+
+        if (Application.isPlaying && cursorRoot != null)
+            cursorRoot.gameObject.SetActive(false);
     }
 
     void Start()
@@ -38,7 +59,7 @@ public class InventoryUIController : SingletonMono<InventoryUIController>
 
     void Update()
     {
-        if (!built || inventorySystem == null)
+        if (!referencesBound || inventorySystem == null)
             return;
 
         UpdateCursorStack();
@@ -46,7 +67,9 @@ public class InventoryUIController : SingletonMono<InventoryUIController>
 
     public void InitializeFromSystem(InventorySystem system)
     {
-        BuildUiIfNeeded();
+        CacheSceneReferences();
+        if (!referencesBound)
+            return;
 
         if (inventorySystem == system)
         {
@@ -78,9 +101,51 @@ public class InventoryUIController : SingletonMono<InventoryUIController>
         }
 
         if (button == PointerEventData.InputButton.Left)
-            inventorySystem.HandleSlotLeftClick(section, index);
+        {
+            if (!inventorySystem.CursorSlot.IsEmpty)
+                inventorySystem.HandleSlotLeftClick(section, index);
+        }
         else if (button == PointerEventData.InputButton.Right)
             inventorySystem.HandleSlotRightClick(section, index);
+    }
+
+    public void BeginSlotDrag(InventorySection section, int index, PointerEventData eventData)
+    {
+        if (inventorySystem == null || !inventorySystem.IsInventoryOpen)
+            return;
+
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        if (!inventorySystem.CursorSlot.IsEmpty)
+            return;
+
+        InventorySlotData slot = GetSlot(section, index);
+        if (slot == null || slot.IsEmpty)
+            return;
+
+        dragOriginSection = section;
+        dragOriginIndex = index;
+        dragInProgress = true;
+
+        inventorySystem.HandleSlotLeftClick(section, index);
+        UpdateCursorStack();
+    }
+
+    public void EndSlotDrag(PointerEventData eventData)
+    {
+        if (!dragInProgress || inventorySystem == null)
+            return;
+
+        InventorySlotView targetSlot = GetTargetSlot(eventData);
+        if (targetSlot != null && targetSlot.SlotIndex >= 0)
+            inventorySystem.HandleSlotLeftClick(targetSlot.Section, targetSlot.SlotIndex);
+        else
+            inventorySystem.HandleSlotLeftClick(dragOriginSection, dragOriginIndex);
+
+        dragInProgress = false;
+        dragOriginIndex = -1;
+        UpdateCursorStack();
     }
 
     private void Subscribe()
@@ -105,289 +170,171 @@ public class InventoryUIController : SingletonMono<InventoryUIController>
         inventorySystem.OnHeldItemChanged -= HandleHeldItemChanged;
     }
 
-    private void BuildUiIfNeeded()
+    private void CacheSceneReferences()
     {
-        if (built)
+        AutoAssignSceneReferences();
+
+        if (referencesBound)
             return;
 
-        built = true;
-        uiFont = ResolveFont();
+        if (cursorSlotView == null && cursorRoot != null)
+            cursorSlotView = cursorRoot.GetComponentInChildren<InventorySlotView>(true);
 
-        GameObject canvasObject = new GameObject(
-            "InventoryCanvas",
-            typeof(RectTransform),
-            typeof(Canvas),
-            typeof(CanvasScaler),
-            typeof(GraphicRaycaster)
-        );
-        canvasObject.transform.SetParent(transform, false);
-
-        canvas = canvasObject.GetComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.pixelPerfect = false;
-
-        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 0.5f;
-
-        canvasRect = canvasObject.GetComponent<RectTransform>();
-        canvasRect.anchorMin = Vector2.zero;
-        canvasRect.anchorMax = Vector2.one;
-        canvasRect.offsetMin = Vector2.zero;
-        canvasRect.offsetMax = Vector2.zero;
-
-        BuildInventoryOverlay();
-        BuildHotbar();
-        BuildCursorView();
-    }
-
-    private void BuildInventoryOverlay()
-    {
-        inventoryOverlay = CreatePanel(
-            "InventoryOverlay",
-            canvasRect,
-            new Color(0f, 0f, 0f, 0.58f),
-            Vector2.zero,
-            Vector2.one,
-            Vector2.zero,
-            Vector2.zero
-        );
-
-        inventoryPanel = CreatePanel(
-            "InventoryPanel",
-            inventoryOverlay,
-            new Color(0.11f, 0.13f, 0.17f, 0.97f),
-            new Vector2(0.5f, 0.5f),
-            new Vector2(0.5f, 0.5f),
-            new Vector2(-280f, -220f),
-            new Vector2(280f, 220f)
-        );
-
-        CreateText(
-            "InventoryTitle",
-            inventoryPanel,
-            "Inventario",
-            28,
-            TextAnchor.UpperCenter,
-            new Color(0.96f, 0.96f, 0.96f, 1f),
-            new Vector2(0.5f, 1f),
-            new Vector2(0.5f, 1f),
-            new Vector2(-220f, -46f),
-            new Vector2(220f, -8f)
-        );
-
-        CreateText(
-            "InventoryHint",
-            inventoryPanel,
-            "Left click: sposta/scambia   Right click: dividi o piazza 1",
-            16,
-            TextAnchor.UpperCenter,
-            new Color(0.71f, 0.77f, 0.86f, 0.95f),
-            new Vector2(0.5f, 1f),
-            new Vector2(0.5f, 1f),
-            new Vector2(-240f, -76f),
-            new Vector2(240f, -44f)
-        );
-
-        GameObject gridObject = new GameObject(
-            "InventoryGrid",
-            typeof(RectTransform),
-            typeof(GridLayoutGroup)
-        );
-        gridObject.transform.SetParent(inventoryPanel, false);
-
-        RectTransform gridRect = gridObject.GetComponent<RectTransform>();
-        gridRect.anchorMin = new Vector2(0.5f, 0.5f);
-        gridRect.anchorMax = new Vector2(0.5f, 0.5f);
-        gridRect.offsetMin = new Vector2(-216f, -142f);
-        gridRect.offsetMax = new Vector2(216f, 122f);
-
-        GridLayoutGroup grid = gridObject.GetComponent<GridLayoutGroup>();
-        grid.cellSize = new Vector2(96f, 96f);
-        grid.spacing = new Vector2(16f, 16f);
-        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = 4;
-        grid.childAlignment = TextAnchor.MiddleCenter;
-
-        for (int i = 0; i < 12; i++)
+        if (inventoryGridRoot != null && inventorySlotViews.Count == 0)
         {
-            InventorySlotView slotView = CreateSlotView(
-                gridRect,
-                InventorySection.MainInventory,
-                i,
-                string.Empty
-            );
-            inventorySlotViews.Add(slotView);
+            InventorySlotView[] views = inventoryGridRoot.GetComponentsInChildren<InventorySlotView>(true);
+            ConfigureSlots(views, inventorySlotViews, InventorySection.MainInventory, false);
         }
 
-        inventoryOverlay.gameObject.SetActive(false);
-    }
-
-    private void BuildHotbar()
-    {
-        hotbarRoot = CreatePanel(
-            "HotbarRoot",
-            canvasRect,
-            new Color(0f, 0f, 0f, 0f),
-            new Vector2(0.5f, 0f),
-            new Vector2(0.5f, 0f),
-            new Vector2(-220f, 26f),
-            new Vector2(220f, 156f)
-        );
-        hotbarRoot.GetComponent<Image>().raycastTarget = false;
-
-        selectedItemText = CreateText(
-            "SelectedItem",
-            hotbarRoot,
-            string.Empty,
-            18,
-            TextAnchor.MiddleCenter,
-            new Color(0.98f, 0.98f, 0.98f, 0.95f),
-            new Vector2(0.5f, 1f),
-            new Vector2(0.5f, 1f),
-            new Vector2(-200f, -30f),
-            new Vector2(200f, 0f)
-        );
-
-        GameObject rowObject = new GameObject(
-            "HotbarRow",
-            typeof(RectTransform),
-            typeof(HorizontalLayoutGroup)
-        );
-        rowObject.transform.SetParent(hotbarRoot, false);
-
-        RectTransform rowRect = rowObject.GetComponent<RectTransform>();
-        rowRect.anchorMin = new Vector2(0.5f, 0f);
-        rowRect.anchorMax = new Vector2(0.5f, 0f);
-        rowRect.offsetMin = new Vector2(-208f, 0f);
-        rowRect.offsetMax = new Vector2(208f, 96f);
-
-        HorizontalLayoutGroup layout = rowObject.GetComponent<HorizontalLayoutGroup>();
-        layout.spacing = 12f;
-        layout.childAlignment = TextAnchor.MiddleCenter;
-        layout.childForceExpandHeight = false;
-        layout.childForceExpandWidth = false;
-        layout.childControlHeight = false;
-        layout.childControlWidth = false;
-
-        for (int i = 0; i < 4; i++)
+        if (hotbarRowRoot != null && hotbarSlotViews.Count == 0)
         {
-            InventorySlotView slotView = CreateSlotView(
-                rowRect,
-                InventorySection.Hotbar,
-                i,
-                (i + 1).ToString()
-            );
-            hotbarSlotViews.Add(slotView);
+            InventorySlotView[] views = hotbarRowRoot.GetComponentsInChildren<InventorySlotView>(true);
+            ConfigureSlots(views, hotbarSlotViews, InventorySection.Hotbar, true);
         }
-    }
 
-    private void BuildCursorView()
-    {
-        cursorRoot = CreatePanel(
-            "CursorStack",
-            canvasRect,
-            new Color(0f, 0f, 0f, 0f),
-            new Vector2(0f, 1f),
-            new Vector2(0f, 1f),
-            new Vector2(0f, -96f),
-            new Vector2(84f, -12f)
-        );
-        cursorRoot.GetComponent<Image>().raycastTarget = false;
+        if (cursorSlotView != null)
+        {
+            cursorSlotView.Configure(this, InventorySection.MainInventory, -1, string.Empty);
+            cursorSlotView.SetCursorGhostMode(true);
+            cursorSlotView.SetShortcutVisible(false);
+            cursorSlotView.SetRaycastTarget(false);
+        }
 
-        CanvasGroup canvasGroup = cursorRoot.gameObject.AddComponent<CanvasGroup>();
-        canvasGroup.blocksRaycasts = false;
-        canvasGroup.interactable = false;
+        referencesBound = canvasRect != null
+            && inventoryOverlay != null
+            && hotbarRoot != null
+            && cursorRoot != null
+            && selectedItemText != null
+            && cursorSlotView != null
+            && inventorySlotViews.Count > 0
+            && hotbarSlotViews.Count > 0;
 
-        cursorSlotView = CreateSlotView(
-            cursorRoot,
-            InventorySection.MainInventory,
-            -1,
-            string.Empty
-        );
-        cursorSlotView.SetShortcutVisible(false);
-        cursorSlotView.SetRaycastTarget(false);
+        if (!referencesBound)
+        {
+            Debug.LogWarning(
+                "InventoryUIController could not bind all scene references. Verify the UI hierarchy in the active scene."
+            );
+            return;
+        }
+
         cursorRoot.gameObject.SetActive(false);
     }
 
-    private InventorySlotView CreateSlotView(
-        Transform parent,
+    private void AutoAssignSceneReferences()
+    {
+        canvasRect ??= FindRectByPathOrName("InventoryCanvas");
+        inventoryOverlay ??= FindRectByPathOrName("InventoryCanvas/InventoryOverlay", "InventoryOverlay");
+        hotbarRoot ??= FindRectByPathOrName("InventoryCanvas/HotbarRoot", "HotbarRoot");
+        cursorRoot ??= FindRectByPathOrName("InventoryCanvas/CursorStack", "CursorStack");
+        inventoryGridRoot ??= FindTransformByPathOrName(
+            "InventoryCanvas/InventoryOverlay/InventoryPanel/InventoryGrid",
+            "InventoryGrid"
+        );
+        hotbarRowRoot ??= FindTransformByPathOrName(
+            "InventoryCanvas/HotbarRoot/HotbarPanel/HotbarRow",
+            "HotbarRow"
+        );
+        selectedItemText ??= FindTextByPathOrName(
+            "InventoryCanvas/HotbarRoot/HotbarPanel/SelectedItem",
+            "SelectedItem"
+        );
+        cursorSlotView ??= FindComponentByPathOrName<InventorySlotView>(
+            "InventoryCanvas/CursorStack/Slot",
+            "CursorStack"
+        );
+    }
+
+    private void ConfigureSlots(
+        InventorySlotView[] views,
+        List<InventorySlotView> target,
         InventorySection section,
-        int index,
-        string shortcut
+        bool showShortcut
     )
     {
-        GameObject slotObject = new GameObject("Slot", typeof(RectTransform));
-        slotObject.transform.SetParent(parent, false);
+        target.Clear();
 
-        RectTransform rect = slotObject.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(96f, 96f);
-        LayoutElement layoutElement = slotObject.AddComponent<LayoutElement>();
-        layoutElement.preferredWidth = 96f;
-        layoutElement.preferredHeight = 96f;
+        for (int i = 0; i < views.Length; i++)
+        {
+            if (views[i] == null)
+                continue;
 
-        InventorySlotView slotView = slotObject.AddComponent<InventorySlotView>();
-        slotView.Initialize(this, section, index, uiFont, shortcut);
-        return slotView;
+            views[i].Configure(this, section, i, showShortcut ? (i + 1).ToString() : string.Empty);
+            views[i].SetShortcutVisible(showShortcut);
+            target.Add(views[i]);
+        }
     }
 
-    private RectTransform CreatePanel(
-        string name,
-        Transform parent,
-        Color color,
-        Vector2 anchorMin,
-        Vector2 anchorMax,
-        Vector2 offsetMin,
-        Vector2 offsetMax
-    )
+    private RectTransform FindRectByPathOrName(string relativePath, string fallbackName = null)
     {
-        GameObject panelObject = new GameObject(name, typeof(RectTransform), typeof(Image));
-        panelObject.transform.SetParent(parent, false);
+        Transform found = transform.Find(relativePath);
+        if (found != null)
+            return found as RectTransform;
 
-        RectTransform rect = panelObject.GetComponent<RectTransform>();
-        rect.anchorMin = anchorMin;
-        rect.anchorMax = anchorMax;
-        rect.offsetMin = offsetMin;
-        rect.offsetMax = offsetMax;
+        if (!string.IsNullOrWhiteSpace(fallbackName))
+            return FindDescendantByName<RectTransform>(transform, fallbackName);
 
-        Image image = panelObject.GetComponent<Image>();
-        image.color = color;
-
-        return rect;
+        return null;
     }
 
-    private Text CreateText(
-        string name,
-        Transform parent,
-        string content,
-        int fontSize,
-        TextAnchor alignment,
-        Color color,
-        Vector2 anchorMin,
-        Vector2 anchorMax,
-        Vector2 offsetMin,
-        Vector2 offsetMax
-    )
+    private Transform FindTransformByPathOrName(string relativePath, string fallbackName = null)
     {
-        GameObject textObject = new GameObject(name, typeof(RectTransform), typeof(Text));
-        textObject.transform.SetParent(parent, false);
+        Transform found = transform.Find(relativePath);
+        if (found != null)
+            return found;
 
-        RectTransform rect = textObject.GetComponent<RectTransform>();
-        rect.anchorMin = anchorMin;
-        rect.anchorMax = anchorMax;
-        rect.offsetMin = offsetMin;
-        rect.offsetMax = offsetMax;
+        return !string.IsNullOrWhiteSpace(fallbackName)
+            ? FindDescendantByName<Transform>(transform, fallbackName)
+            : null;
+    }
 
-        Text text = textObject.GetComponent<Text>();
-        text.font = uiFont;
-        text.fontSize = fontSize;
-        text.alignment = alignment;
-        text.color = color;
-        text.text = content;
-        text.raycastTarget = false;
+    private Text FindTextByPathOrName(string relativePath, string fallbackName = null)
+    {
+        Transform found = transform.Find(relativePath);
+        if (found != null)
+            return found.GetComponent<Text>();
 
-        return text;
+        return !string.IsNullOrWhiteSpace(fallbackName)
+            ? FindDescendantByName<Text>(transform, fallbackName)
+            : null;
+    }
+
+    private T FindComponentByPathOrName<T>(string relativePath, string fallbackName = null) where T : Component
+    {
+        Transform found = transform.Find(relativePath);
+        if (found != null)
+            return found.GetComponent<T>();
+
+        if (!string.IsNullOrWhiteSpace(fallbackName))
+        {
+            Transform fallbackRoot = FindDescendantByName<Transform>(transform, fallbackName);
+            if (fallbackRoot != null)
+                return fallbackRoot.GetComponentInChildren<T>(true);
+        }
+
+        return null;
+    }
+
+    private T FindDescendantByName<T>(Transform root, string objectName) where T : Component
+    {
+        if (root == null || string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child.name == objectName)
+            {
+                T component = child.GetComponent<T>();
+                if (component != null)
+                    return component;
+            }
+
+            T nested = FindDescendantByName<T>(child, objectName);
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
     }
 
     private void EnsureEventSystem()
@@ -409,17 +356,9 @@ public class InventoryUIController : SingletonMono<InventoryUIController>
         DontDestroyOnLoad(eventSystemObject);
     }
 
-    private Font ResolveFont()
-    {
-        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        if (font == null)
-            font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        return font;
-    }
-
     private void RefreshAll()
     {
-        if (!built || inventorySystem == null)
+        if (!referencesBound || inventorySystem == null)
             return;
 
         RefreshSlots(
@@ -453,11 +392,26 @@ public class InventoryUIController : SingletonMono<InventoryUIController>
         if (inventoryOverlay != null)
             inventoryOverlay.gameObject.SetActive(open);
 
+        if (open && referencesBound && inventorySystem != null)
+        {
+            RefreshSlots(
+                inventorySlotViews,
+                inventorySystem.MainSlots,
+                InventorySection.MainInventory
+            );
+            RefreshSlots(hotbarSlotViews, inventorySystem.HotbarSlots, InventorySection.Hotbar);
+            HandleHeldItemChanged(inventorySystem.GetSelectedItem());
+            Canvas.ForceUpdateCanvases();
+        }
+
         UpdateCursorStack();
     }
 
     private void HandleHotbarSelectionChanged(int selectedIndex)
     {
+        if (!referencesBound || inventorySystem == null)
+            return;
+
         RefreshSlots(hotbarSlotViews, inventorySystem.HotbarSlots, InventorySection.Hotbar);
         HandleHeldItemChanged(inventorySystem.GetSelectedItem());
     }
@@ -472,7 +426,7 @@ public class InventoryUIController : SingletonMono<InventoryUIController>
 
     private void UpdateCursorStack()
     {
-        if (cursorRoot == null || cursorSlotView == null || inventorySystem == null)
+        if (canvasRect == null || cursorRoot == null || cursorSlotView == null || inventorySystem == null)
             return;
 
         bool showCursorStack = inventorySystem.IsInventoryOpen && !inventorySystem.CursorSlot.IsEmpty;
@@ -485,15 +439,37 @@ public class InventoryUIController : SingletonMono<InventoryUIController>
             ? Mouse.current.position.ReadValue()
             : (Vector2)Input.mousePosition;
 
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvasRect,
-            mousePosition,
-            null,
-            out Vector2 localPoint
-        );
-
-        cursorRoot.anchoredPosition = localPoint + new Vector2(48f, -48f);
+        cursorRoot.position = mousePosition + cursorDragOffset;
         cursorSlotView.Refresh(inventorySystem.CursorSlot, false);
+    }
+
+    private InventorySlotData GetSlot(InventorySection section, int index)
+    {
+        if (inventorySystem == null)
+            return null;
+
+        IReadOnlyList<InventorySlotData> slots = section == InventorySection.Hotbar
+            ? inventorySystem.HotbarSlots
+            : inventorySystem.MainSlots;
+
+        if (index < 0 || index >= slots.Count)
+            return null;
+
+        return slots[index];
+    }
+
+    private InventorySlotView GetTargetSlot(PointerEventData eventData)
+    {
+        if (eventData == null)
+            return null;
+
+        GameObject raycastObject = eventData.pointerCurrentRaycast.gameObject;
+        if (raycastObject == null)
+            raycastObject = eventData.pointerEnter;
+
+        return raycastObject != null
+            ? raycastObject.GetComponentInParent<InventorySlotView>()
+            : null;
     }
 
     private void OnDestroy()

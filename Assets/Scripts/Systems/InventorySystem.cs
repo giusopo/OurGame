@@ -61,6 +61,32 @@ public class InventorySystem : SingletonMono<InventorySystem>
         return true;
     }
 
+    public bool TryTakeSelectedItem(int amount, out InventoryItemDefinition item, out int quantity)
+    {
+        item = null;
+        quantity = 0;
+
+        if (amount <= 0 || hotbarSlots == null || hotbarSlots.Length == 0)
+            return false;
+
+        InventorySlotData slot = hotbarSlots[selectedHotbarIndex];
+        if (slot.IsEmpty)
+            return false;
+
+        item = slot.Item;
+        int removed = slot.Remove(amount);
+        if (removed <= 0)
+        {
+            item = null;
+            return false;
+        }
+
+        quantity = removed;
+
+        NotifyInventoryChanged();
+        return true;
+    }
+
     public bool CanAddItem(InventoryItemDefinition item, int amount)
     {
         if (item == null || amount <= 0)

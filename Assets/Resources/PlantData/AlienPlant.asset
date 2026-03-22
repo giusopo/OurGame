@@ -12,6 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4f33b363f709e04eabce8db90edebda, type: 3}
   m_Name: AlienPlant
   m_EditorClassIdentifier: Assembly-CSharp::PlantData
+  displayName: Alien Plant
+  icon: {fileID: 0}
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  maxStack: 99
+  description: 
+  worldDropPrefab: {fileID: 0}
+  worldDropScale: {x: 0.35, y: 0.35, z: 0.35}
   plantId: alienP_001
   plantPrefab: {fileID: 8905916130324818803, guid: f57a3279fda57c0478d5ed9c5d95a35a, type: 3}
   growthStages:
@@ -22,6 +29,10 @@ MonoBehaviour:
   growHours: 0
   growMinutes: 5
   sellPrice: 10
+  harvestYield: 1
+  harvestItem: {fileID: 11400000, guid: 2f61de266ff3e9644836aeb7d2bdbcdf, type: 2}
+  harvestMinYield: 3
+  harvestMaxYield: 7
   regrows: 0
   regrowDays: 0
   regrowHours: 0

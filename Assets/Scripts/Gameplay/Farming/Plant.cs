@@ -148,14 +148,24 @@ public class Plant : MonoBehaviour
         if (state == null || !state.IsReadyToHarvest(currentTick))
             return;
 
-        int harvestAmount = Mathf.Max(1, plantData.harvestYield);
-        if (!InventorySystem.Instance.TryAddItem(plantData, harvestAmount))
+        InventoryItemDefinition harvestItem = plantData.GetHarvestItem();
+        int harvestAmount = GetHarvestAmount(currentTick);
+
+        if (harvestItem == null)
+        {
+            Debug.LogError("Harvest item non configurato per " + plantData.plantId);
+            return;
+        }
+
+        if (!InventorySystem.Instance.TryAddItem(harvestItem, harvestAmount))
         {
             Debug.Log("Inventario pieno: raccolto annullato.");
             return;
         }
 
-        Debug.Log("Collected " + plantData.plantId);
+        Debug.Log(
+            $"Collected {harvestAmount}x {harvestItem.DisplayName} from {plantData.plantId}"
+        );
 
         if (plantData.regrows)
         {
@@ -170,6 +180,20 @@ public class Plant : MonoBehaviour
 
             Destroy(gameObject);
         }
+    }
+
+    private int GetHarvestAmount(long currentTick)
+    {
+        int tileX = Tile != null ? Tile.GridPosition.x : 0;
+        int tileY = Tile != null ? Tile.GridPosition.y : 0;
+
+        return state.GetDeterministicHarvestYield(
+            plantData.GetHarvestMinYield(),
+            plantData.GetHarvestMaxYield(),
+            tileX,
+            tileY,
+            currentTick
+        );
     }
 
     void OnDestroy()

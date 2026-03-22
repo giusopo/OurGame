@@ -29,10 +29,7 @@ public class AstronautThirdPersonCamera : MonoBehaviour
         yaw += mouseX;
         pitch -= mouseY;
 
-        // --- KEYBOARD ROTATION (Q/E) ---
-        if (!inventoryOpen && Input.GetKey(KeyCode.Q))
-            yaw -= keyboardRotationSpeed * Time.deltaTime;
-
+        // Q is reserved for dropping the selected item from the hotbar.
         if (!inventoryOpen && Input.GetKey(KeyCode.E))
             yaw += keyboardRotationSpeed * Time.deltaTime;
 

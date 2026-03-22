@@ -14,12 +14,12 @@ namespace OurGame.Core.Domain
 
         public bool IsEmpty()
         {
-            return plantState == null;
+            return plantState == null || !plantState.IsValid();
         }
 
         public void SetPlant(PlantState plant)
         {
-            plantState = plant;
+            plantState = plant != null && plant.IsValid() ? plant : null;
         }
 
         public void RemovePlant()

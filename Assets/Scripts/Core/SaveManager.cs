@@ -48,8 +48,8 @@ namespace OurGame.Core
 
             if (data.grids == null || data.grids.Count == 0)
             {
-                Debug.LogWarning(
-                    "Save file does not contain world-state grids and is incompatible with the current save system."
+                Debug.Log(
+                    "Save file does not contain world-state grids. Skipping load for this save."
                 );
                 return;
             }
@@ -96,10 +96,12 @@ namespace OurGame.Core
 
                 foreach (FarmTileState tileState in gridState.GetAllTiles())
                 {
+                    PlantState plantState = CopyPlantState(tileState.plantState);
                     gridSave.tiles.Add(new FarmTileSaveData
                     {
                         position = tileState.position,
-                        plant = CopyPlantState(tileState.plantState)
+                        hasPlant = plantState != null,
+                        plant = plantState
                     });
                 }
 
@@ -199,6 +201,12 @@ namespace OurGame.Core
                 if (tileState == null)
                     continue;
 
+                if (!tileSave.hasPlant)
+                {
+                    tileState.RemovePlant();
+                    continue;
+                }
+
                 tileState.plantState = CopyPlantState(tileSave.plant);
             }
 
@@ -209,7 +217,7 @@ namespace OurGame.Core
         {
             foreach (FarmTileState tileState in restoredGridState.GetAllTiles())
             {
-                if (tileState == null || tileState.plantState == null)
+                if (tileState == null || tileState.IsEmpty())
                     continue;
 
                 FarmTile tile = grid.GetTile(tileState.position);
@@ -248,7 +256,7 @@ namespace OurGame.Core
 
         private PlantState CopyPlantState(PlantState source)
         {
-            if (source == null)
+            if (source == null || !source.IsValid())
                 return null;
 
             PlantState copy = new PlantState(

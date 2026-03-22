@@ -53,6 +53,43 @@ namespace OurGame.Core.Domain
             return (currentTick - plantedTick) >= growthTime;
         }
 
+        public bool IsValid()
+        {
+            return !string.IsNullOrWhiteSpace(plantId)
+                && growthTime > 0
+                && MaxStage > 0;
+        }
+
+        public int GetDeterministicHarvestYield(
+            int minInclusive,
+            int maxInclusive,
+            int tileX,
+            int tileY,
+            long currentTick
+        )
+        {
+            int min = System.Math.Max(1, minInclusive);
+            int max = System.Math.Max(min, maxInclusive);
+            int range = max - min + 1;
+
+            long hash = 1469598103934665603L;
+            hash = CombineHash(hash, plantedTick);
+            hash = CombineHash(hash, currentTick);
+            hash = CombineHash(hash, growthTime);
+            hash = CombineHash(hash, growthStage);
+            hash = CombineHash(hash, tileX);
+            hash = CombineHash(hash, tileY);
+
+            if (!string.IsNullOrEmpty(plantId))
+            {
+                for (int i = 0; i < plantId.Length; i++)
+                    hash = CombineHash(hash, plantId[i]);
+            }
+
+            ulong positiveHash = unchecked((ulong)hash);
+            return min + (int)(positiveHash % (ulong)range);
+        }
+
         public void Harvest(long currentTick, long regrowTime)
         {
             if (!regrows)
@@ -60,6 +97,14 @@ namespace OurGame.Core.Domain
 
             plantedTick = currentTick - (growthTime - regrowTime);
             growthStage = 0;
+        }
+
+        private long CombineHash(long current, long value)
+        {
+            unchecked
+            {
+                return (current ^ value) * 1099511628211L;
+            }
         }
     }
 }

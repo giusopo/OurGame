@@ -21,6 +21,11 @@ public class PlantData : InventoryItemDefinition
     public int sellPrice;
     [Min(1)] public int harvestYield = 1;
 
+    [Header("Harvest")]
+    [SerializeField] private InventoryItemDefinition harvestItem;
+    [SerializeField, Min(1)] private int harvestMinYield = 3;
+    [SerializeField, Min(1)] private int harvestMaxYield = 7;
+
     [Header("Regrow")]
     public bool regrows;
     public int regrowDays;
@@ -37,5 +42,24 @@ public class PlantData : InventoryItemDefinition
     public long GetRegrowTimeTicks()
     {
         return regrowDays * 1440L + regrowHours * 60L + regrowMinutes;
+    }
+
+    public InventoryItemDefinition GetHarvestItem()
+    {
+        return harvestItem != null ? harvestItem : this;
+    }
+
+    public int GetHarvestMinYield()
+    {
+        return harvestMinYield > 0 ? harvestMinYield : 3;
+    }
+
+    public int GetHarvestMaxYield()
+    {
+        int minYield = GetHarvestMinYield();
+        if (harvestMaxYield > 0)
+            return Mathf.Max(minYield, harvestMaxYield);
+
+        return Mathf.Max(minYield, 7);
     }
 }

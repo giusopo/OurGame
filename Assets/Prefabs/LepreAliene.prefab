@@ -142,6 +142,7 @@ GameObject:
   - component: {fileID: 4140507255989185555}
   - component: {fileID: 8589830053321036694}
   - component: {fileID: 513916623050175319}
+  - component: {fileID: -6959262046252529034}
   m_Layer: 0
   m_Name: LepreAliene
   m_TagString: Untagged
@@ -227,15 +228,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee2aaa74a1dafc44e8a2e0fd14422b11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Scappa
-  player: {fileID: 0}
-  nearDistance: 10
-  veryNearDistance: 4
-  slowSpeed: 2
-  runSpeed: 6
+  nearDistance: 15
+  veryNearDistance: 8
+  slowSpeed: 3
+  runSpeed: 8
   wanderSpeed: 2
   wanderRadius: 5
   wanderTime: 3
-  stopDistance: 0.5
 --- !u!136 &513916623050175319
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -259,6 +258,19 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0.5, z: 0}
+--- !u!114 &-6959262046252529034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2391359435489877134}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac6453f3f4953a94bb9589bb19d2c7d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ScappaMovement
+  rotationSpeed: 5
 --- !u!1 &2594355968516817363
 GameObject:
   m_ObjectHideFlags: 0

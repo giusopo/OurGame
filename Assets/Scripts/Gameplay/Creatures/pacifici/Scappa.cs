@@ -1,9 +1,9 @@
 using UnityEngine;
 
-public class Scappa : MonoBehaviour
+public class ScappaAI : MonoBehaviour
 {
     [Header("Player")]
-    [SerializeField] private Transform player;
+    private Transform player;
 
     [Header("Distanze")]
     public float nearDistance = 10f;
@@ -14,57 +14,51 @@ public class Scappa : MonoBehaviour
     public float runSpeed = 6f;
     public float wanderSpeed = 2f;
 
-    [Header("Movimento autonomo")]
+    [Header("Wander")]
     public float wanderRadius = 5f;
     public float wanderTime = 3f;
-    public float stopDistance = 0.5f;
 
-    private Animator anim;
     private Vector3 wanderTarget;
     private float wanderTimer;
 
+    // OUTPUT
+    public Vector3 Direction { get; private set; }
+    public float Speed { get; private set; }
+    public int ScappaState { get; private set; }
+
     void Start()
     {
-        anim = GetComponentInChildren<Animator>();
         wanderTimer = wanderTime;
         ChooseNewWanderTarget();
-
-        // 🔥 AUTO-ASSIGN PLAYER
-        if (player == null)
-        {
-            GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null)
-                player = p.transform;
-            else
-                Debug.LogWarning("Player non trovato! Assegna il tag 'Player'");
-        }
+        FindPlayer();
     }
 
     void Update()
     {
-        if (player == null) return;
+        // 🔥 sicurezza: se player sparisce o non è ancora stato trovato
+        if (player == null)
+        {
+            FindPlayer();
+            if (player == null) return;
+        }
 
         float distance = Vector3.Distance(transform.position, player.position);
 
-        int scappa = 0;
-        float speed = 0f;
-        Vector3 dir = Vector3.zero;
-
-        // -------- PLAYER MOLTO VICINO --------
+        // PLAYER MOLTO VICINO
         if (distance < veryNearDistance)
         {
-            scappa = 2;
-            speed = runSpeed;
-            dir = transform.position - player.position;
+            ScappaState = 2;
+            Speed = runSpeed;
+            Direction = transform.position - player.position;
         }
-        // -------- PLAYER VICINO --------
+        // PLAYER VICINO
         else if (distance < nearDistance)
         {
-            scappa = 1;
-            speed = slowSpeed;
-            dir = transform.position - player.position;
+            ScappaState = 1;
+            Speed = slowSpeed;
+            Direction = transform.position - player.position;
         }
-        // -------- MOVIMENTO AUTONOMO --------
+        // WANDER
         else
         {
             wanderTimer -= Time.deltaTime;
@@ -72,37 +66,27 @@ public class Scappa : MonoBehaviour
             if (wanderTimer <= 0f)
                 ChooseNewWanderTarget();
 
-            dir = wanderTarget - transform.position;
+            Direction = wanderTarget - transform.position;
 
-            if (dir.magnitude > stopDistance)
+            if (Direction.magnitude > 0.5f)
             {
-                scappa = 1;
-                speed = wanderSpeed;
+                ScappaState = 1;
+                Speed = wanderSpeed;
             }
             else
             {
-                scappa = 0;
-                speed = 0;
+                ScappaState = 0;
+                Speed = 0f;
             }
         }
+    }
 
-        anim.SetInteger("scappa", scappa);
+    void FindPlayer()
+    {
+        GameObject p = GameObject.FindGameObjectWithTag("Player");
 
-        // -------- MOVIMENTO --------
-        if (speed > 0)
-        {
-            dir.y = 0;
-            dir.Normalize();
-
-            transform.position += dir * speed * Time.deltaTime;
-
-            Quaternion targetRotation = Quaternion.LookRotation(dir);
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                targetRotation,
-                Time.deltaTime * 5f
-            );
-        }
+        if (p != null)
+            player = p.transform;
     }
 
     void ChooseNewWanderTarget()

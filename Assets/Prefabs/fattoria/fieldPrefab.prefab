@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5832773300649523240}
   - component: {fileID: 1039444485225083140}
   - component: {fileID: 5207451153796328867}
+  - component: {fileID: 9073579493550044267}
   m_Layer: 0
   m_Name: fieldPrefab
   m_TagString: Untagged
@@ -128,3 +129,17 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.4348264, y: 0.09758428, z: 2.779117}
   m_Center: {x: -0.0000009536743, y: 0.04879214, z: 0}
+--- !u!114 &9073579493550044267
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8608959869830373336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 939e39cb28448da4497d14c7d915c19b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainDetailCleaner
+  radius: 4
+  clearOnStart: 1

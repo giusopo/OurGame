@@ -118,25 +118,56 @@ namespace OurGame.Core
 
         private void RebuildRuntimeTiles()
         {
-            List<Transform> childrenToRemove = new List<Transform>();
-            for (int i = 0; i < transform.childCount; i++)
-                childrenToRemove.Add(transform.GetChild(i));
+            Terrain terrain = Terrain.activeTerrain;
 
-            foreach (Transform child in childrenToRemove)
-                DestroyImmediate(child.gameObject);
+            if (terrain == null)
+            {
+                Debug.LogError("No active Terrain found!");
+                return;
+            }
+
+            Vector3 terrainPos = terrain.transform.position;
+            TerrainData data = terrain.terrainData;
+
+            for (int i = transform.childCount - 1; i >= 0; i--)
+                DestroyImmediate(transform.GetChild(i).gameObject);
 
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {
                     FarmTile tile = Instantiate(tilePrefab, transform);
-                    tile.transform.localPosition = new Vector3(
-                        (x + 0.5f) * tileSize,
-                        0f,
-                        (y + 0.5f) * tileSize
-                    );
+
                     tile.GridPosition = new Vector2Int(x, y);
                     tile.name = $"Tile_{x}_{y}";
+
+                    // 🌍 posizione base griglia
+                    float worldX = transform.position.x + (x + 0.5f) * tileSize;
+                    float worldZ = transform.position.z + (y + 0.5f) * tileSize;
+
+                    // ⛰️ controllo dentro terrain
+                    if (worldX < terrainPos.x ||
+                        worldX > terrainPos.x + data.size.x ||
+                        worldZ < terrainPos.z ||
+                        worldZ > terrainPos.z + data.size.z)
+                    {
+                        continue;
+                    }
+
+                    // 📏 altezza terrain (come RandomSpawner)
+                    float height = terrain.SampleHeight(new Vector3(worldX, 0, worldZ))
+                                + terrainPos.y;
+
+                    Vector3 pos = new Vector3(worldX, height, worldZ);
+
+                    tile.transform.position = pos;
+
+                    // 🧭 allineamento alla normale (come AlignToTerrain)
+                    if (Physics.Raycast(pos + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 50f))
+                    {
+                        Quaternion rot = Quaternion.FromToRotation(Vector3.up, hit.normal);
+                        tile.transform.rotation = rot;
+                    }
                 }
             }
         }

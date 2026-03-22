@@ -1,119 +1,87 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using OurGame.Core;
 
 public class PlayerInteraction : MonoBehaviour
 {
     public PlantData debugPlant;
     [SerializeField] private Transform itemDropOrigin;
-    [SerializeField] private float itemDropForwardOffset = 1f;
-    [SerializeField] private float itemDropUpOffset = 1.1f;
+    [SerializeField] private float itemDropForwardOffset = 0.50f;
+    [SerializeField] private float itemDropUpOffset = 0.5f;
+    [SerializeField] private string interactionKeyLabel = "E";
+    [SerializeField] private float pickupHoldDuration = 0.55f;
+    [SerializeField] private float pickupReleaseDecayDuration = 0.3f;
+       [SerializeField] private float promptShowDelay = 0.5f;
 
-    private FarmTile currentTile;
-    private DroppedItem currentDroppedItem;
+    private PlayerDroppedItemTracker droppedItemTracker;
+    private PlayerFarmTileTracker farmTileTracker;
+    private PlayerFarmInteractor farmInteractor;
+    private PlayerItemDropController itemDropController;
+    private PlayerPickupInteractionController pickupInteractionController;
 
-    private void Update()
+    public DroppedItem SelectedDroppedItem => droppedItemTracker != null
+        ? droppedItemTracker.SelectedDroppedItem
+        : null;
+
+    public FarmTile CurrentFarmTile => farmTileTracker != null
+        ? farmTileTracker.CurrentTile
+        : null;
+
+    public string CurrentInteractionPrompt
     {
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null || InventorySystem.Instance.IsInventoryOpen)
-            return;
+        get
+        {
+            if (droppedItemTracker != null && droppedItemTracker.HasSelectedDroppedItem)
+                return droppedItemTracker.CurrentPromptText;
 
-        if (keyboard.qKey.wasPressedThisFrame)
-            DropSelectedItem();
+            return farmInteractor != null
+                ? farmInteractor.CurrentPromptText
+                : string.Empty;
+        }
+    }
+
+    void Awake()
+    {
+        droppedItemTracker = GetOrAddComponent<PlayerDroppedItemTracker>();
+        farmTileTracker = GetOrAddComponent<PlayerFarmTileTracker>();
+        farmInteractor = GetOrAddComponent<PlayerFarmInteractor>();
+        itemDropController = GetOrAddComponent<PlayerItemDropController>();
+        pickupInteractionController = GetOrAddComponent<PlayerPickupInteractionController>();
+
+        farmInteractor.Configure(farmTileTracker, debugPlant);
+        itemDropController.Configure(itemDropOrigin, itemDropForwardOffset, itemDropUpOffset);
+        pickupInteractionController.Configure(
+            droppedItemTracker,
+            farmInteractor,
+            interactionKeyLabel,
+            pickupHoldDuration,
+            pickupReleaseDecayDuration,
+            promptShowDelay
+        );
     }
 
     public void OnInteract(InputValue value)
     {
-        if (!value.isPressed)
-            return;
-
-        if (InventorySystem.Instance.IsInventoryOpen)
-            return;
-
-        if (currentDroppedItem != null && currentDroppedItem.TryCollect())
-            return;
-
-        if (currentTile == null)
-            return;
-
-        long currentTick = TimeManager.Instance.CurrentTick;
-
-        Debug.Log("Interagisci con la tile: " + currentTile.GridPosition);
-
-        // Pianta seed
-        if (currentTile.IsEmpty())
-        {
-            PlantData selectedSeed = InventorySystem.Instance.GetSelectedItem() as PlantData;
-
-            if (selectedSeed != null)
-            {
-                currentTile.PlantSeed(selectedSeed, currentTick);
-                InventorySystem.Instance.TryConsumeSelectedItem(1);
-                return;
-            }
-
-            if (debugPlant != null)
-                currentTile.PlantSeed(debugPlant, currentTick);
-        }
-        else
-        {
-            Plant plant = currentTile.currentPlant;
-
-            if (plant != null && plant.IsReadyToHarvest(currentTick))
-            {
-                plant.Harvest(currentTick);
-            }
-            else
-            {
-                Debug.Log("La pianta non è pronta.");
-            }
-        }
+        pickupInteractionController?.HandleInteractInput(value.isPressed);
     }
 
-    private void OnTriggerEnter(Collider other)
+    void OnTriggerEnter(Collider other)
     {
-        DroppedItem droppedItem = other.GetComponentInParent<DroppedItem>();
-        if (droppedItem != null)
-        {
-            currentDroppedItem = droppedItem;
-            return;
-        }
-
-        FarmTile tile = other.GetComponent<FarmTile>();
-
-        if (tile != null)
-        {
-            currentTile = tile;
-            Debug.Log("Player entrato in FarmTile: " + tile.ParentGrid.gridId + " Posizione: " + tile.GridPosition);
-        }
+        droppedItemTracker?.HandleTriggerEnter(other);
+        farmTileTracker?.HandleTriggerEnter(other);
     }
 
-    private void OnTriggerExit(Collider other)
+    void OnTriggerExit(Collider other)
     {
-        DroppedItem droppedItem = other.GetComponentInParent<DroppedItem>();
-        if (droppedItem != null && droppedItem == currentDroppedItem)
-            currentDroppedItem = null;
-
-        FarmTile tile = other.GetComponent<FarmTile>();
-
-        if (tile != null && tile == currentTile)
-        {
-            currentTile = null;
-            Debug.Log("Player lasciato FarmTile");
-        }
+        droppedItemTracker?.HandleTriggerExit(other);
+        farmTileTracker?.HandleTriggerExit(other);
     }
 
-    private void DropSelectedItem()
+    private T GetOrAddComponent<T>() where T : Component
     {
-        if (!InventorySystem.Instance.TryTakeSelectedItem(1, out InventoryItemDefinition item, out int quantity))
-            return;
+        T component = GetComponent<T>();
+        if (component == null)
+            component = gameObject.AddComponent<T>();
 
-        Transform origin = itemDropOrigin != null ? itemDropOrigin : transform;
-        Vector3 dropPosition =
-            origin.position
-            + origin.forward * itemDropForwardOffset
-            + Vector3.up * itemDropUpOffset;
-
-        DroppedItem.Spawn(item, quantity, dropPosition, origin.forward);
+        return component;
     }
 }

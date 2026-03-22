@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Tomato
   m_EditorClassIdentifier: Assembly-CSharp::SimpleInventoryItemDefinition
   displayName: Tomato
-  icon: {fileID: 21300000, guid: 78e636c3c29c93b4a8640d57993ffbdd, type: 3}
+  icon: {fileID: 21300000, guid: f56797a3964eed149af8a37767b61826, type: 3}
   tint: {r: 1, g: 1, b: 1, a: 1}
   maxStack: 12
   description: 

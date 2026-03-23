@@ -18,6 +18,7 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
 
         anim = GetComponentInChildren<Animator>();
     }
@@ -75,8 +76,17 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        // Collisions should never be allowed to spin the player body.
+        rb.angularVelocity = Vector3.zero;
+
+        float currentYaw = rb.rotation.eulerAngles.y;
+        float targetYaw = currentYaw;
+
         if (InventorySystem.Instance.IsInventoryOpen)
+        {
+            rb.MoveRotation(Quaternion.Euler(0f, targetYaw, 0f));
             return;
+        }
 
         // movimento orizzontale stabile
         Vector3 forward = transform.forward;
@@ -88,11 +98,7 @@ public class PlayerController : MonoBehaviour
 
         // rotazione controllata SOLO su Y
         float rotation = turn * rotationSpeed * Time.fixedDeltaTime;
-        Quaternion deltaRotation = Quaternion.Euler(0, rotation, 0);
-        rb.MoveRotation(rb.rotation * deltaRotation);
-
-        // blocca inclinazioni strane
-        Vector3 rot = rb.rotation.eulerAngles;
-        rb.rotation = Quaternion.Euler(0, rot.y, 0);
+        targetYaw += rotation;
+        rb.MoveRotation(Quaternion.Euler(0f, targetYaw, 0f));
     }
 }

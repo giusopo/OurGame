@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [DisallowMultipleComponent]
 public class PlayerPickupInteractionController : MonoBehaviour
@@ -19,7 +21,10 @@ public class PlayerPickupInteractionController : MonoBehaviour
     private float pickupReleaseDecayDuration = 0.3f;
     private float promptShowDelay = 0.18f;
 
-    private bool interactHeld;
+    private bool holdActive;
+    private bool waitForReleaseBeforeNextHold;
+    private bool wasInteractionButtonPressedLastFrame;
+    private bool actionInputPressed;
     private float holdProgressSeconds;
     private DroppedItem highlightedItem;
     private DroppedItemSelectionHighlight highlightVisual;
@@ -61,13 +66,23 @@ public class PlayerPickupInteractionController : MonoBehaviour
 
     public void HandleInteractInput(bool isPressed)
     {
+        actionInputPressed = isPressed;
+
         if (IsInventoryOpen())
         {
-            interactHeld = false;
+            holdActive = false;
             return;
         }
 
-        interactHeld = isPressed && GetCurrentInteractionKind() != InteractionTargetKind.None;
+        if (
+            isPressed
+            && !waitForReleaseBeforeNextHold
+            && GetCurrentInteractionKind() != InteractionTargetKind.None
+            && promptShowDelayRemaining > 0f
+        )
+        {
+            promptShowDelayRemaining = 0f;
+        }
     }
 
     private void UpdateHoldProgress()
@@ -75,38 +90,72 @@ public class PlayerPickupInteractionController : MonoBehaviour
         if (promptShowDelayRemaining > 0f)
             promptShowDelayRemaining = Mathf.Max(0f, promptShowDelayRemaining - Time.deltaTime);
 
+        bool isButtonPressed = IsInteractionButtonCurrentlyPressed();
+        bool justPressed = isButtonPressed && !wasInteractionButtonPressedLastFrame;
+        bool justReleased = !isButtonPressed && wasInteractionButtonPressedLastFrame;
+
         if (IsInventoryOpen())
         {
-            interactHeld = false;
+            holdActive = false;
+            if (justReleased)
+                waitForReleaseBeforeNextHold = false;
+
             DecayHoldProgress();
+            wasInteractionButtonPressedLastFrame = isButtonPressed;
             return;
         }
 
         InteractionTargetKind currentKind = GetCurrentInteractionKind();
         bool canInteract = currentKind != InteractionTargetKind.None;
-        bool promptReady = canInteract && promptShowDelayRemaining <= 0f;
 
         if (!canInteract)
         {
-            interactHeld = false;
+            holdActive = false;
+            if (justReleased)
+                waitForReleaseBeforeNextHold = false;
+
             DecayHoldProgress();
+            wasInteractionButtonPressedLastFrame = isButtonPressed;
             return;
         }
 
-        if (!promptReady)
-            return;
+        if (waitForReleaseBeforeNextHold)
+        {
+            holdActive = false;
+            if (justReleased)
+                waitForReleaseBeforeNextHold = false;
 
-        if (interactHeld)
+            DecayHoldProgress();
+            wasInteractionButtonPressedLastFrame = isButtonPressed;
+            return;
+        }
+
+        if (justPressed)
+        {
+            holdActive = true;
+            if (promptShowDelayRemaining > 0f)
+                promptShowDelayRemaining = 0f;
+        }
+
+        if (holdActive && isButtonPressed)
             holdProgressSeconds = Mathf.Min(pickupHoldDuration, holdProgressSeconds + Time.deltaTime);
         else
+        {
+            holdActive = false;
             DecayHoldProgress();
+        }
 
         if (holdProgressSeconds < pickupHoldDuration)
+        {
+            wasInteractionButtonPressedLastFrame = isButtonPressed;
             return;
+        }
 
         holdProgressSeconds = 0f;
-        interactHeld = false;
+        holdActive = false;
+        waitForReleaseBeforeNextHold = true;
         FinalizeInteraction(currentKind);
+        wasInteractionButtonPressedLastFrame = isButtonPressed;
     }
 
     private void UpdatePromptVisual()
@@ -136,7 +185,7 @@ public class PlayerPickupInteractionController : MonoBehaviour
 
     private void HandleSelectedDroppedItemChanged(DroppedItem nextItem)
     {
-        interactHeld = false;
+        holdActive = false;
         holdProgressSeconds = 0f;
         SetHighlightedItem(nextItem);
         RestartPromptDelay();
@@ -255,6 +304,66 @@ public class PlayerPickupInteractionController : MonoBehaviour
     private bool IsInventoryOpen()
     {
         return InventorySystem.Instance != null && InventorySystem.Instance.IsInventoryOpen;
+    }
+
+    private bool IsInteractionButtonCurrentlyPressed()
+    {
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard == null)
+            return actionInputPressed;
+
+        if (!TryResolveKeyboardKey(interactionKeyLabel, out Key key))
+            return actionInputPressed;
+
+        return keyboard[key].isPressed;
+    }
+
+    private static bool TryResolveKeyboardKey(string keyLabel, out Key key)
+    {
+        key = Key.None;
+        if (string.IsNullOrWhiteSpace(keyLabel))
+            return false;
+
+        string normalized = keyLabel.Trim().ToUpperInvariant();
+
+        if (normalized.Length == 1)
+        {
+            char character = normalized[0];
+            if (char.IsLetter(character))
+                return Enum.TryParse(normalized, out key);
+
+            if (char.IsDigit(character))
+                return Enum.TryParse($"Digit{character}", out key);
+        }
+
+        switch (normalized)
+        {
+            case "SPACE":
+                key = Key.Space;
+                return true;
+
+            case "SHIFT":
+            case "LEFTSHIFT":
+                key = Key.LeftShift;
+                return true;
+
+            case "RIGHTSHIFT":
+                key = Key.RightShift;
+                return true;
+
+            case "CTRL":
+            case "CONTROL":
+            case "LEFTCTRL":
+                key = Key.LeftCtrl;
+                return true;
+
+            case "RIGHTCTRL":
+                key = Key.RightCtrl;
+                return true;
+
+            default:
+                return false;
+        }
     }
 
     private readonly struct InteractionTargetInfo

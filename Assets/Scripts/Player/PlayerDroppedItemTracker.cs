@@ -80,7 +80,7 @@ public class PlayerDroppedItemTracker : MonoBehaviour
 
         foreach (DroppedItem droppedItem in nearbyDroppedItems)
         {
-            if (droppedItem == null)
+            if (droppedItem == null || !droppedItem.CanBePickedUp)
                 continue;
 
             float distance = (droppedItem.transform.position - playerPosition).sqrMagnitude;

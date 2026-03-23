@@ -10,7 +10,7 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private string interactionKeyLabel = "E";
     [SerializeField] private float pickupHoldDuration = 0.55f;
     [SerializeField] private float pickupReleaseDecayDuration = 0.3f;
-       [SerializeField] private float promptShowDelay = 0.5f;
+    [SerializeField] private float promptShowDelay = 0.18f;
 
     private PlayerDroppedItemTracker droppedItemTracker;
     private PlayerFarmTileTracker farmTileTracker;

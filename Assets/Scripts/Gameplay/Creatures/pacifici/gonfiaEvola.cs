@@ -1,9 +1,7 @@
 using UnityEngine;
 
-public class CreatureBehavior : MonoBehaviour
+public class CreatureBehavior : PacificEntity
 {
-    private Transform player;
-
     [Header("Distanze")]
     public float detectionDistance = 10f;
 
@@ -20,104 +18,66 @@ public class CreatureBehavior : MonoBehaviour
     public Animator animator;
 
     private Vector3 originalScale;
-    private Rigidbody playerRb;
 
-    void Start()
+    protected override void Awake()
     {
+        base.Awake();
         originalScale = transform.localScale;
 
         if (animator == null)
-            animator = GetComponent<Animator>();
-
-        FindPlayer();
+            animator = Animator;
     }
 
     void Update()
     {
-        // 🔥 sicurezza: se player non esiste ancora o è stato spawnato dopo
-        if (player == null)
-        {
-            FindPlayer();
-            if (player == null) return;
-        }
+        if (!TryGetDistanceToPlayer(out float distance))
+            return;
 
-        float distance = Vector3.Distance(transform.position, player.position);
         float halfDistance = detectionDistance * 0.5f;
 
-        // 👀 guarda il player
         if (distance < detectionDistance)
-        {
-            Vector3 lookPos = player.position;
-            lookPos.y = transform.position.y;
-            transform.LookAt(lookPos);
-        }
+            FacePlayerOnPlane();
 
-        // 🎯 DISTANZA GRANDE
         if (distance >= detectionDistance)
         {
-            animator.SetInteger("playerVicino", 0);
-
-            Vector3 targetScale = originalScale * normalScale;
-            transform.localScale = Vector3.Lerp(
-                transform.localScale,
-                targetScale,
-                Time.deltaTime * scaleSpeed
-            );
-
+            SetPlayerState(0);
+            LerpScale(normalScale);
             return;
         }
 
-        // 🎯 DISTANZA MEDIA
-        if (distance < detectionDistance)
-        {
-            animator.SetInteger("playerVicino", 1);
+        SetPlayerState(distance < halfDistance ? 2 : 1);
+        LerpScale(growScale);
 
-            Vector3 targetScale = originalScale * growScale;
-            transform.localScale = Vector3.Lerp(
-                transform.localScale,
-                targetScale,
-                Time.deltaTime * scaleSpeed
-            );
-        }
-
-        // 🎯 DISTANZA VICINA
-        if (distance < halfDistance)
-        {
-            animator.SetInteger("playerVicino", 2);
-        }
-
-        // 💥 DISTANZA MOLTO VICINA
         if (distance < halfDistance * 0.2f)
         {
-            Vector3 targetScale = originalScale * shrinkScale;
-            transform.localScale = Vector3.Lerp(
-                transform.localScale,
-                targetScale,
-                Time.deltaTime * scaleSpeed
-            );
-
+            LerpScale(shrinkScale);
             PushPlayer();
         }
     }
 
-    void FindPlayer()
+    private void SetPlayerState(int state)
     {
-        GameObject p = GameObject.FindGameObjectWithTag("Player");
-
-        if (p != null)
-        {
-            player = p.transform;
-            playerRb = p.GetComponent<Rigidbody>();
-        }
+        if (animator != null)
+            animator.SetInteger("playerVicino", state);
     }
 
-    void PushPlayer()
+    private void LerpScale(float multiplier)
     {
-        if (playerRb == null) return;
+        Vector3 targetScale = originalScale * multiplier;
+        transform.localScale = Vector3.Lerp(
+            transform.localScale,
+            targetScale,
+            Time.deltaTime * scaleSpeed
+        );
+    }
 
-        Vector3 direction = (player.position - transform.position).normalized;
+    private void PushPlayer()
+    {
+        if (Player == null)
+            return;
+
+        Vector3 direction = (Player.position - transform.position).normalized;
         direction.y = 0.5f;
-
-        playerRb.AddForce(direction * pushForce, ForceMode.Impulse);
+        AddForceToPlayer(direction, pushForce);
     }
 }

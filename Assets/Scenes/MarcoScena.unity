@@ -1457,7 +1457,6 @@ MonoBehaviour:
   minScale: 1
   maxScale: 2
   uniformScaling: 1
-  FornisciCollisioni: 0
   collisionMask:
     serializedVersion: 2
     m_Bits: 0
@@ -5723,7 +5722,6 @@ MonoBehaviour:
   minScale: 3
   maxScale: 5
   uniformScaling: 1
-  FornisciCollisioni: 0
   collisionMask:
     serializedVersion: 2
     m_Bits: 0
@@ -7854,7 +7852,6 @@ MonoBehaviour:
   minScale: 1
   maxScale: 2
   uniformScaling: 1
-  FornisciCollisioni: 0
   collisionMask:
     serializedVersion: 2
     m_Bits: 0
@@ -9918,7 +9915,6 @@ MonoBehaviour:
   minScale: 1
   maxScale: 2
   uniformScaling: 1
-  FornisciCollisioni: 0
   collisionMask:
     serializedVersion: 2
     m_Bits: 0
@@ -10897,7 +10893,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d42772eed74c5be49b249fa38382cb42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  velocita: 5
+  moveSpeed: 5
+  sprintMultiplier: 2
   rotationSpeed: 100
 --- !u!224 &1567030723
 RectTransform:
@@ -11818,13 +11815,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RandomSpawner
   terrain: {fileID: 705563936}
   prefab: {fileID: 1467277096911013437, guid: a6e9f2bbc294cdb43b6f31fd70daddcf, type: 3}
-  count: 20
+  count: 10
   spawnRadius: 200
-  minDistance: 0.1
+  minDistance: 4
   minScale: 3
   maxScale: 5
   uniformScaling: 1
-  FornisciCollisioni: 0
   collisionMask:
     serializedVersion: 2
     m_Bits: 0
@@ -12207,7 +12203,6 @@ MonoBehaviour:
   minScale: 3
   maxScale: 5
   uniformScaling: 1
-  FornisciCollisioni: 0
   collisionMask:
     serializedVersion: 2
     m_Bits: 0
@@ -14125,7 +14120,6 @@ MonoBehaviour:
   minScale: 3
   maxScale: 5
   uniformScaling: 1
-  FornisciCollisioni: 0
   collisionMask:
     serializedVersion: 2
     m_Bits: 0

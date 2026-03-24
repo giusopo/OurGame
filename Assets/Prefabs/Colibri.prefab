@@ -170,8 +170,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2240259419076222087}
   - component: {fileID: 1773777715135941878}
-  - component: {fileID: -7078732965163283630}
   - component: {fileID: -9053666872276944660}
+  - component: {fileID: 213701795616317909}
   m_Layer: 0
   m_Name: Colibri
   m_TagString: Untagged
@@ -218,23 +218,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &-7078732965163283630
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1467277096911013437}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9081e3d2f9b21f4498323cbb510be826, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Fly
-  moveSpeed: 3
-  changeDirTime: 4
-  minHeight: 65
-  maxHeight: 70
-  wanderRadius: 5
 --- !u!54 &-9053666872276944660
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -262,6 +245,29 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 80
   m_CollisionDetection: 0
+--- !u!114 &213701795616317909
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1467277096911013437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bff7a3449ea502c479e32045699cbc6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BirdFly
+  animator: {fileID: 0}
+  playerTag: Player
+  moveSpeed: 12
+  changeDirTime: 4
+  verticalMoveSpeed: 2
+  minHeight: 70
+  maxHeight: 100
+  wanderRadius: 20
+  horizontalArrivalDistance: 0.35
+  verticalArrivalDistance: 0.2
+  rotationSpeed: 2
 --- !u!1 &2043936995899903168
 GameObject:
   m_ObjectHideFlags: 0

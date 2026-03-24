@@ -1,15 +1,12 @@
 using UnityEngine;
 
-public class ScappaAI : MonoBehaviour
+public class ScappaAI : PacificEntity
 {
-    [Header("Player")]
-    private Transform player;
-
     [Header("Distanze")]
     public float nearDistance = 10f;
     public float veryNearDistance = 4f;
 
-    [Header("Velocità")]
+    [Header("Velocita")]
     public float slowSpeed = 2f;
     public float runSpeed = 6f;
     public float wanderSpeed = 2f;
@@ -21,7 +18,6 @@ public class ScappaAI : MonoBehaviour
     private Vector3 wanderTarget;
     private float wanderTimer;
 
-    // OUTPUT
     public Vector3 Direction { get; private set; }
     public float Speed { get; private set; }
     public int ScappaState { get; private set; }
@@ -30,63 +26,44 @@ public class ScappaAI : MonoBehaviour
     {
         wanderTimer = wanderTime;
         ChooseNewWanderTarget();
-        FindPlayer();
     }
 
     void Update()
     {
-        // 🔥 sicurezza: se player sparisce o non è ancora stato trovato
-        if (player == null)
-        {
-            FindPlayer();
-            if (player == null) return;
-        }
+        if (!TryGetDistanceToPlayer(out float distance))
+            return;
 
-        float distance = Vector3.Distance(transform.position, player.position);
-
-        // PLAYER MOLTO VICINO
         if (distance < veryNearDistance)
         {
             ScappaState = 2;
             Speed = runSpeed;
-            Direction = transform.position - player.position;
+            Direction = GetDirectionAwayFromPlayer();
+            return;
         }
-        // PLAYER VICINO
-        else if (distance < nearDistance)
+
+        if (distance < nearDistance)
         {
             ScappaState = 1;
             Speed = slowSpeed;
-            Direction = transform.position - player.position;
+            Direction = GetDirectionAwayFromPlayer();
+            return;
         }
-        // WANDER
+
+        wanderTimer -= Time.deltaTime;
+        if (wanderTimer <= 0f)
+            ChooseNewWanderTarget();
+
+        Direction = wanderTarget - transform.position;
+        if (Direction.magnitude > 0.5f)
+        {
+            ScappaState = 1;
+            Speed = wanderSpeed;
+        }
         else
         {
-            wanderTimer -= Time.deltaTime;
-
-            if (wanderTimer <= 0f)
-                ChooseNewWanderTarget();
-
-            Direction = wanderTarget - transform.position;
-
-            if (Direction.magnitude > 0.5f)
-            {
-                ScappaState = 1;
-                Speed = wanderSpeed;
-            }
-            else
-            {
-                ScappaState = 0;
-                Speed = 0f;
-            }
+            ScappaState = 0;
+            Speed = 0f;
         }
-    }
-
-    void FindPlayer()
-    {
-        GameObject p = GameObject.FindGameObjectWithTag("Player");
-
-        if (p != null)
-            player = p.transform;
     }
 
     void ChooseNewWanderTarget()

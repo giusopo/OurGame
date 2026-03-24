@@ -1,40 +1,28 @@
 using UnityEngine;
 
-public class ScappaMovement : MonoBehaviour
+public class ScappaMovement : Entity
 {
     private ScappaAI ai;
-    private Animator anim;
 
     public float rotationSpeed = 5f;
 
-    void Start()
+    protected override void Awake()
     {
+        base.Awake();
         ai = GetComponent<ScappaAI>();
-        anim = GetComponentInChildren<Animator>();
     }
 
     void Update()
     {
-        if (ai == null) return;
+        if (ai == null)
+            return;
 
-        Vector3 dir = ai.Direction;
-        float speed = ai.Speed;
+        SetAnimatorInt("scappa", ai.ScappaState);
 
-        anim.SetInteger("scappa", ai.ScappaState);
+        if (ai.Speed <= 0f || ai.Direction == Vector3.zero)
+            return;
 
-        if (speed > 0 && dir != Vector3.zero)
-        {
-            dir.y = 0;
-            dir.Normalize();
-
-            transform.position += dir * speed * Time.deltaTime;
-
-            Quaternion targetRotation = Quaternion.LookRotation(dir);
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                targetRotation,
-                Time.deltaTime * rotationSpeed
-            );
-        }
+        MoveInDirection(ai.Direction, ai.Speed);
+        RotateTowards(ai.Direction, rotationSpeed);
     }
 }

@@ -1,5 +1,8 @@
-public enum InventorySection
+namespace OurGame.UI
 {
-    MainInventory,
-    Hotbar
+    public enum InventorySection
+    {
+        MainInventory,
+        Hotbar
+    }
 }

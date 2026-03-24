@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using OurGame.Core;
+using OurGame.Systems;
+using OurGame.UI;
 
 public class InventorySystem : SingletonMono<InventorySystem>
 {

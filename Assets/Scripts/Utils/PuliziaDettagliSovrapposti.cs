@@ -1,7 +1,10 @@
 using UnityEngine;
 
+[AddComponentMenu("OurGame/Tools/Terrain Detail Cleaner")]
 public class TerrainDetailCleaner : MonoBehaviour
 {
+    [Header("Cleaning Settings")]
+    [Min(1f)]
     public float radius = 3f;
 
     public bool clearOnStart = true;
@@ -15,7 +18,11 @@ public class TerrainDetailCleaner : MonoBehaviour
     public void Clear()
     {
         Terrain terrain = Terrain.activeTerrain;
-        if (terrain == null) return;
+        if (terrain == null)
+        {
+            Debug.LogWarning("TerrainDetailCleaner requires an active Terrain to clear details.");
+            return;
+        }
 
         TerrainData data = terrain.terrainData;
 
@@ -26,10 +33,12 @@ public class TerrainDetailCleaner : MonoBehaviour
         float normX = (wPos.x - tPos.x) / data.size.x;
         float normZ = (wPos.z - tPos.z) / data.size.z;
 
-        int mapX = Mathf.RoundToInt(normX * data.detailWidth);
-        int mapZ = Mathf.RoundToInt(normZ * data.detailHeight);
+        int mapX = Mathf.RoundToInt(normX * (data.detailWidth - 1));
+        int mapZ = Mathf.RoundToInt(normZ * (data.detailHeight - 1));
 
         int r = Mathf.RoundToInt(radius);
+        mapX = Mathf.Clamp(mapX, r, Mathf.Max(r, data.detailWidth - r - 1));
+        mapZ = Mathf.Clamp(mapZ, r, Mathf.Max(r, data.detailHeight - r - 1));
 
         int size = r * 2 + 1;
         int[,] empty = new int[size, size];
@@ -59,5 +68,10 @@ public class TerrainDetailCleaner : MonoBehaviour
                 empty
             );
         }
+    }
+
+    void OnValidate()
+    {
+        radius = Mathf.Max(1f, radius);
     }
 }

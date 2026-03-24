@@ -1,85 +1,88 @@
 using System;
 using UnityEngine;
 
-[Serializable]
-public class InventorySlotData
+namespace OurGame.Systems
 {
-    [SerializeField] private InventoryItemDefinition item;
-    [SerializeField] private int quantity;
-
-    public InventoryItemDefinition Item => item;
-    public int Quantity => quantity;
-    public bool IsEmpty => item == null || quantity <= 0;
-
-    public void Set(InventoryItemDefinition newItem, int newQuantity)
+    [Serializable]
+    public class InventorySlotData
     {
-        item = newItem;
-        quantity = Mathf.Max(0, newQuantity);
+        [SerializeField] private InventoryItemDefinition item;
+        [SerializeField] private int quantity;
 
-        if (item == null || quantity == 0)
-            Clear();
-    }
+        public InventoryItemDefinition Item => item;
+        public int Quantity => quantity;
+        public bool IsEmpty => item == null || quantity <= 0;
 
-    public void Clear()
-    {
-        item = null;
-        quantity = 0;
-    }
-
-    public bool CanStackWith(InventoryItemDefinition otherItem)
-    {
-        return !IsEmpty && item == otherItem && quantity < item.MaxStack;
-    }
-
-    public int Add(InventoryItemDefinition otherItem, int amount)
-    {
-        if (otherItem == null || amount <= 0)
-            return 0;
-
-        if (IsEmpty)
+        public void Set(InventoryItemDefinition newItem, int newQuantity)
         {
-            int movedIntoEmptySlot = Mathf.Min(otherItem.MaxStack, amount);
-            Set(otherItem, movedIntoEmptySlot);
-            return movedIntoEmptySlot;
+            item = newItem;
+            quantity = Mathf.Max(0, newQuantity);
+
+            if (item == null || quantity == 0)
+                Clear();
         }
 
-        if (!CanStackWith(otherItem))
-            return 0;
-
-        int moved = Mathf.Min(otherItem.MaxStack - quantity, amount);
-        quantity += moved;
-        return moved;
-    }
-
-    public int Remove(int amount)
-    {
-        if (IsEmpty || amount <= 0)
-            return 0;
-
-        int removed = Mathf.Min(quantity, amount);
-        quantity -= removed;
-
-        if (quantity <= 0)
-            Clear();
-
-        return removed;
-    }
-
-    public void CopyFrom(InventorySlotData other)
-    {
-        if (other == null || other.IsEmpty)
+        public void Clear()
         {
-            Clear();
-            return;
+            item = null;
+            quantity = 0;
         }
 
-        Set(other.Item, other.Quantity);
-    }
+        public bool CanStackWith(InventoryItemDefinition otherItem)
+        {
+            return !IsEmpty && item == otherItem && quantity < item.MaxStack;
+        }
 
-    public InventorySlotData Clone()
-    {
-        InventorySlotData clone = new InventorySlotData();
-        clone.CopyFrom(this);
-        return clone;
+        public int Add(InventoryItemDefinition otherItem, int amount)
+        {
+            if (otherItem == null || amount <= 0)
+                return 0;
+
+            if (IsEmpty)
+            {
+                int movedIntoEmptySlot = Mathf.Min(otherItem.MaxStack, amount);
+                Set(otherItem, movedIntoEmptySlot);
+                return movedIntoEmptySlot;
+            }
+
+            if (!CanStackWith(otherItem))
+                return 0;
+
+            int moved = Mathf.Min(otherItem.MaxStack - quantity, amount);
+            quantity += moved;
+            return moved;
+        }
+
+        public int Remove(int amount)
+        {
+            if (IsEmpty || amount <= 0)
+                return 0;
+
+            int removed = Mathf.Min(quantity, amount);
+            quantity -= removed;
+
+            if (quantity <= 0)
+                Clear();
+
+            return removed;
+        }
+
+        public void CopyFrom(InventorySlotData other)
+        {
+            if (other == null || other.IsEmpty)
+            {
+                Clear();
+                return;
+            }
+
+            Set(other.Item, other.Quantity);
+        }
+
+        public InventorySlotData Clone()
+        {
+            InventorySlotData clone = new InventorySlotData();
+            clone.CopyFrom(this);
+            return clone;
+        }
     }
 }

@@ -1,6 +1,7 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
+[AddComponentMenu("OurGame/Tools/Random Spawner")]
 public class RandomSpawner : MonoBehaviour
 {
     [Header("References")]
@@ -18,7 +19,6 @@ public class RandomSpawner : MonoBehaviour
     public bool uniformScaling = true;
 
     [Header("Collision Settings")]
-    public bool FornisciCollisioni;
     public LayerMask collisionMask;
 
     [Header("Optional")]

@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[AddComponentMenu("OurGame/World/Proximity Manager")]
 public class ProximityManager : MonoBehaviour
 {
     void OnTriggerEnter(Collider other)

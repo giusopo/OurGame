@@ -1,9 +1,13 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
 {
-    public float velocita = 5f;
+    [Header("Movement")]
+    [FormerlySerializedAs("velocita")]
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float sprintMultiplier = 2f;
     public float rotationSpeed = 100f;
 
     private float speed;
@@ -45,12 +49,12 @@ public class PlayerController : MonoBehaviour
         if (isRunning)
         {
             anim.SetInteger("Movimento", 2); // CORSA
-            speed = velocita * 2;
+            speed = moveSpeed * sprintMultiplier;
         }
         else if (isMovingForward)
         {
             anim.SetInteger("Movimento", 1); // CAMMINA
-            speed = velocita;
+            speed = moveSpeed;
         }
         else
         {

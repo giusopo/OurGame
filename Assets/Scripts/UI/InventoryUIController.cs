@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 using OurGame.Core;
+using OurGame.Systems;
+using OurGame.UI;
 
 public class InventoryUIController : SingletonMono<InventoryUIController>
 {

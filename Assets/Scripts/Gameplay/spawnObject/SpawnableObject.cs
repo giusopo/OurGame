@@ -1,17 +1,20 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
+[AddComponentMenu("OurGame/World/Spawnable Object")]
 [RequireComponent(typeof(Collider))]
 public class SpawnableObject : MonoBehaviour
 {
-
-    public bool FornisciCollisioni = false;
+    [Header("Collision State")]
+    [FormerlySerializedAs("FornisciCollisioni")]
+    [SerializeField] private bool startWithCollisionEnabled;
     protected Collider col;
 
     protected virtual void Awake()
     {
         col = GetComponent<Collider>();
         if (col != null)
-            col.enabled = FornisciCollisioni; // disattivo di default
+            col.enabled = startWithCollisionEnabled;
     }
 
     public virtual void Activate()

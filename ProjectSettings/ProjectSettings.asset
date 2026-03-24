@@ -826,7 +826,7 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
-    Standalone: CREST_OCEAN
+    Standalone: CREST_OCEAN;UNITY_TIMELINE
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

@@ -14,18 +14,12 @@ public class CreatureBehavior : PacificEntity
     [Header("Forza")]
     public float pushForce = 10f;
 
-    [Header("Animazione")]
-    public Animator animator;
-
     private Vector3 originalScale;
 
     protected override void Awake()
     {
         base.Awake();
         originalScale = transform.localScale;
-
-        if (animator == null)
-            animator = Animator;
     }
 
     void Update()
@@ -57,8 +51,7 @@ public class CreatureBehavior : PacificEntity
 
     private void SetPlayerState(int state)
     {
-        if (animator != null)
-            animator.SetInteger("playerVicino", state);
+        SetAnimatorInt("playerVicino", state);
     }
 
     private void LerpScale(float multiplier)

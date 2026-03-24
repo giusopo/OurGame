@@ -23,7 +23,7 @@ public abstract class PacificEntity : Entity
         return Player != null;
     }
 
-    protected bool TryGetDistanceToPlayer(out float distance)
+    public bool TryGetDistanceToPlayer(out float distance)
     {
         distance = float.PositiveInfinity;
         if (!EnsurePlayerReference())

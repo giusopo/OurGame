@@ -11,6 +11,7 @@ public class PlayerPickupInteractionController : MonoBehaviour
         None,
         Pickup,
         Farm,
+        Capture,
     }
 
     private PlayerDroppedItemTracker droppedItemTracker;
@@ -28,6 +29,7 @@ public class PlayerPickupInteractionController : MonoBehaviour
     private float holdProgressSeconds;
     private DroppedItem highlightedItem;
     private DroppedItemSelectionHighlight highlightVisual;
+    private CapturableEntity selectedCapturable;
     private string currentPromptKey = string.Empty;
     private float promptShowDelayRemaining;
 
@@ -205,6 +207,10 @@ public class PlayerPickupInteractionController : MonoBehaviour
             case InteractionTargetKind.Farm:
                 completed = farmInteractor != null && farmInteractor.TryInteract();
                 break;
+
+            case InteractionTargetKind.Capture:
+                completed = selectedCapturable != null && selectedCapturable.TryCapture();
+                break;
         }
 
         if (completed)
@@ -218,6 +224,8 @@ public class PlayerPickupInteractionController : MonoBehaviour
 
     private InteractionTargetInfo GetCurrentInteractionTarget()
     {
+        selectedCapturable = CapturableEntity.GetClosestAvailable(transform.position);
+
         if (droppedItemTracker != null && droppedItemTracker.HasSelectedDroppedItem)
         {
             DroppedItem selected = droppedItemTracker.SelectedDroppedItem;
@@ -225,6 +233,17 @@ public class PlayerPickupInteractionController : MonoBehaviour
                 InteractionTargetKind.Pickup,
                 droppedItemTracker.CurrentPromptText,
                 selected != null ? $"pickup:{selected.GetInstanceID()}" : string.Empty
+            );
+        }
+
+        if (selectedCapturable != null)
+        {
+            return new InteractionTargetInfo(
+                InteractionTargetKind.Capture,
+                string.IsNullOrWhiteSpace(selectedCapturable.PromptLabel)
+                    ? "Cattura"
+                    : selectedCapturable.PromptLabel,
+                $"capture:{selectedCapturable.GetInstanceID()}"
             );
         }
 

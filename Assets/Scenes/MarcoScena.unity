@@ -1451,9 +1451,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RandomSpawner
   terrain: {fileID: 705563936}
   prefab: {fileID: 1818332099616921954, guid: 31f29bdc9d64b074fa99fd853356ff4d, type: 3}
-  count: 20
-  spawnRadius: 100
-  minDistance: 0.1
+  count: 10
+  spawnRadius: 200
+  minDistance: 10
   minScale: 1
   maxScale: 2
   uniformScaling: 1
@@ -4688,6 +4688,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: -4.78
       objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: 24e7ce0382bd8de49b56cabec3ac05bc, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 0d4012247eba11b4da88b6527daafc45, type: 2}
     - target: {fileID: 919132149155446097, guid: 24e7ce0382bd8de49b56cabec3ac05bc, type: 3}
       propertyPath: m_Name
       value: casascomposta
@@ -4957,11 +4961,11 @@ Transform:
   m_Children:
   - {fileID: 1803905278}
   - {fileID: 2116264509}
+  - {fileID: 735777928}
   - {fileID: 1457741271}
   - {fileID: 1712864826}
   - {fileID: 180669955}
   - {fileID: 1137562998}
-  - {fileID: 735777928}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &661457915
@@ -5696,7 +5700,7 @@ Transform:
   m_GameObject: {fileID: 735777927}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -176.4, y: 2.082817, z: -106.8}
+  m_LocalPosition: {x: -209, y: 2.082817, z: -150.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5718,7 +5722,7 @@ MonoBehaviour:
   prefab: {fileID: 4962361982661891496, guid: e5f9b3d5f95ffeb4c8f0b9d495b4d8b3, type: 3}
   count: 30
   spawnRadius: 100
-  minDistance: 2
+  minDistance: 4
   minScale: 3
   maxScale: 5
   uniformScaling: 1
@@ -7826,7 +7830,7 @@ Transform:
   m_GameObject: {fileID: 1137562997}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -128.2, y: 2.082817, z: -18.7}
+  m_LocalPosition: {x: -145.1, y: 2.082817, z: -12.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7845,10 +7849,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RandomSpawner
   terrain: {fileID: 705563936}
-  prefab: {fileID: 8648428375196731806, guid: dd2c81b647404b84bb41af4970558fa3, type: 3}
+  prefab: {fileID: 1818332099616921954, guid: 78ae83b34296c754da492c0ecee86099, type: 3}
   count: 4
-  spawnRadius: 20
-  minDistance: 0.1
+  spawnRadius: 200
+  minDistance: 20
   minScale: 1
   maxScale: 2
   uniformScaling: 1
@@ -12060,37 +12064,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1777734443}
   m_CullTransparentMesh: 1
---- !u!1 &1788370518
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1788370519}
-  m_Layer: 0
-  m_Name: alberi
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1788370519
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1788370518}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -178.33807, y: 60.84022, z: 17.88636}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1790679108
 GameObject:
   m_ObjectHideFlags: 0
@@ -12199,7 +12172,7 @@ MonoBehaviour:
   prefab: {fileID: 4962361982661891496, guid: e5f9b3d5f95ffeb4c8f0b9d495b4d8b3, type: 3}
   count: 30
   spawnRadius: 70
-  minDistance: 2
+  minDistance: 4
   minScale: 3
   maxScale: 5
   uniformScaling: 1
@@ -12218,7 +12191,7 @@ Transform:
   m_GameObject: {fileID: 1803905276}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -25.336548, y: 2.082817, z: -15.711037}
+  m_LocalPosition: {x: 2.2, y: 2.082817, z: -15.711037}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14094,7 +14067,7 @@ Transform:
   m_GameObject: {fileID: 2116264508}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -176.4, y: 2.082817, z: 54.4}
+  m_LocalPosition: {x: -202.9, y: 2.082817, z: 38.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14457,7 +14430,6 @@ SceneRoots:
   - {fileID: 1326142751}
   - {fileID: 705563937}
   - {fileID: 1839405783}
-  - {fileID: 1788370519}
   - {fileID: 1157532888}
   - {fileID: 688261067}
   - {fileID: 4898039}

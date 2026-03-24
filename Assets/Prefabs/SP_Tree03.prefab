@@ -127,4 +127,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc0cdedfa39cba9419db492b63ad4acb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnableObject
-  FornisciCollisioni: 1
+  startWithCollisionEnabled: 1

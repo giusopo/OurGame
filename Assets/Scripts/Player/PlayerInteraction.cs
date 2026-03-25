@@ -17,6 +17,7 @@ public class PlayerInteraction : MonoBehaviour
     private PlayerFarmInteractor farmInteractor;
     private PlayerItemDropController itemDropController;
     private PlayerPickupInteractionController pickupInteractionController;
+    private PlayerPocketHoverHighlighter pocketHoverHighlighter;
 
     public DroppedItem SelectedDroppedItem => droppedItemTracker != null
         ? droppedItemTracker.SelectedDroppedItem
@@ -46,6 +47,7 @@ public class PlayerInteraction : MonoBehaviour
         farmInteractor = GetOrAddComponent<PlayerFarmInteractor>();
         itemDropController = GetOrAddComponent<PlayerItemDropController>();
         pickupInteractionController = GetOrAddComponent<PlayerPickupInteractionController>();
+        pocketHoverHighlighter = GetOrAddComponent<PlayerPocketHoverHighlighter>();
 
         farmInteractor.Configure(farmTileTracker, debugPlant);
         itemDropController.Configure(itemDropOrigin, itemDropForwardOffset, itemDropUpOffset);

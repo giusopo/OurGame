@@ -14,19 +14,34 @@ public class CameraController : MonoBehaviour
     public float maxPitch = 60f;
 
     private float currentYaw = 0f;
-    private float targetYaw = 0f;
-
     private float currentPitch = 10f;
+    private float lastTargetYaw;
+    private bool initialized;
+
+    void Start()
+    {
+        InitializeFromTarget();
+    }
 
     void LateUpdate()
     {
         if (target == null)
             return;
 
-        bool inventoryOpen = InventorySystem.Instance.IsInventoryOpen;
+        InitializeFromTarget();
 
-        // INPUT MOUSE (tasto destro premuto)
-        if (!inventoryOpen && Input.GetMouseButton(1))
+        bool inventoryOpen = InventorySystem.Instance != null && InventorySystem.Instance.IsInventoryOpen;
+        bool freeCursorMode = inventoryOpen || Input.GetMouseButton(1);
+
+        ApplyCursorState(freeCursorMode);
+
+        float playerYaw = target.eulerAngles.y;
+        float playerYawDelta = Mathf.DeltaAngle(lastTargetYaw, playerYaw);
+        currentYaw += playerYawDelta;
+        lastTargetYaw = playerYaw;
+
+        // Mouse-look always active unless the player is intentionally freeing the cursor.
+        if (!freeCursorMode)
         {
             float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
             float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
@@ -35,20 +50,6 @@ public class CameraController : MonoBehaviour
 
             currentPitch -= mouseY;
             currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
-
-            targetYaw = currentYaw;
-        }
-        else if (!inventoryOpen)
-        {
-            // ritorno graduale dietro al player (yaw)
-            float playerYaw = target.eulerAngles.y;
-
-            targetYaw = Mathf.LerpAngle(targetYaw, playerYaw, Time.deltaTime * returnSpeed);
-            currentYaw = Mathf.LerpAngle(currentYaw, targetYaw, Time.deltaTime * returnSpeed);
-
-            // opzionale: ritorno leggero del pitch verso default
-            float defaultPitch = 10f;
-            currentPitch = Mathf.Lerp(currentPitch, defaultPitch, Time.deltaTime * returnSpeed);
         }
 
         // rotazione camera completa (yaw + pitch)
@@ -61,5 +62,21 @@ public class CameraController : MonoBehaviour
 
         // applica rotazione direttamente
         transform.rotation = rotation;
+    }
+
+    private void InitializeFromTarget()
+    {
+        if (initialized || target == null)
+            return;
+
+        currentYaw = target.eulerAngles.y;
+        lastTargetYaw = currentYaw;
+        initialized = true;
+    }
+
+    private void ApplyCursorState(bool freeCursorMode)
+    {
+        Cursor.visible = freeCursorMode;
+        Cursor.lockState = freeCursorMode ? CursorLockMode.None : CursorLockMode.Locked;
     }
 }

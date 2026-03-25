@@ -1,0 +1,11 @@
+# MTL file exported from Hitem3D Editor
+# Generated: 2026-03-24T16:16:07.576Z
+
+newmtl material_0
+Kd 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ks 1.000000 1.000000 1.000000
+Ns 1.00
+d 1.000000
+illum 2
+map_Kd diffuse_0.png

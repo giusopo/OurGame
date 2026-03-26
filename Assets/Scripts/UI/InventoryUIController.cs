@@ -29,6 +29,7 @@ public class InventoryUIController : SingletonMono<InventoryUIController>
     private bool dragInProgress;
     private InventorySection dragOriginSection;
     private int dragOriginIndex = -1;
+    private bool hotbarVisible = true;
 
     void Reset()
     {
@@ -83,6 +84,15 @@ public class InventoryUIController : SingletonMono<InventoryUIController>
         inventorySystem = system;
         Subscribe();
         RefreshAll();
+    }
+
+    public void SetHotbarVisible(bool visible)
+    {
+        hotbarVisible = visible;
+
+        CacheSceneReferences();
+        if (hotbarRoot != null)
+            hotbarRoot.gameObject.SetActive(visible);
     }
 
     public void HandleSlotClick(
@@ -372,6 +382,9 @@ public class InventoryUIController : SingletonMono<InventoryUIController>
         HandleInventoryToggled(inventorySystem.IsInventoryOpen);
         HandleHeldItemChanged(inventorySystem.GetSelectedItem());
         UpdateCursorStack();
+
+        if (hotbarRoot != null)
+            hotbarRoot.gameObject.SetActive(hotbarVisible);
     }
 
     private void RefreshSlots(

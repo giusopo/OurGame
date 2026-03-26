@@ -125,7 +125,6 @@ GameObject:
   - component: {fileID: 6850960086175315665}
   - component: {fileID: 2633900494045385125}
   - component: {fileID: 2154331566419323190}
-  - component: {fileID: 1109009766464755441}
   m_Layer: 0
   m_Name: CustomCristal
   m_TagString: Untagged
@@ -181,7 +180,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1019dec167ec4814495e43f051c0bf49, type: 2}
+  - {fileID: 2100000, guid: 12cd2f0251224634bbe01dc4a51e1c15, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -205,25 +204,3 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &1109009766464755441
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1979227486680682233}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -3764884057544330471, guid: cef5dea57d454c04c881b088b25c2c31, type: 3}

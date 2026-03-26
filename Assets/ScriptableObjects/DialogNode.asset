@@ -1,87 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-8615651061112260880
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 197.59999
-    y: 127.60004
-    width: 190
-    height: 155
-  IsDragging: 1
-  IsSelected: 1
-  _sentence:
-    CharacterName: efsef
-    Text: seffffffffffeeff
-    CharacterSprite: {fileID: 0}
-  ParentNodes: []
-  ChildNode: {fileID: 0}
-  _isExternalFunc: 1
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &-5387657190218854448
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
-  m_Name: Answer Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 285.6
-    y: 268.40002
-    width: 190
-    height: 135
-  IsDragging: 0
-  IsSelected: 0
-  Answers:
-  - 
-  AnswerKeys: []
-  ParentNodes: []
-  ChildNodes: []
---- !u!114 &-4940562468599015807
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54f4b3c64aaf434ea0df52154c1c7680, type: 3}
-  m_Name: External Function Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.ExternalFunctionNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 361.6
-    y: 385.20004
-    width: 190
-    height: 80
-  IsDragging: 1
-  IsSelected: 1
-  _functionName: 
-  _description: 
-  ParentNodes: []
-  ChildNode: {fileID: 0}
 --- !u!114 &-4486794008235765233
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -97,18 +15,23 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 370.3999
-    y: 232.40005
+    x: 359.3998
+    y: 161.2
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   Answers:
-  - 1
-  - 1
-  AnswerKeys: []
-  ParentNodes: []
-  ChildNodes: []
+  - Bene
+  - Fa abbastanza freddo oggi!
+  AnswerKeys:
+  - a
+  - d
+  ParentNodes:
+  - {fileID: -2236115093935518811}
+  ChildNodes:
+  - {fileID: 3287955660191651602}
+  - {fileID: -445581529974258157}
 --- !u!114 &-2236115093935518811
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -124,22 +47,54 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 109.60004
-    y: 241.19998
+    x: 79.400085
+    y: 164.40004
     width: 190
     height: 135
   IsDragging: 1
-  IsSelected: 1
+  IsSelected: 0
   _sentence:
-    CharacterName: erwttwt
-    Text: wtttttttttttttttttttttttttttt
+    CharacterName: SNOW
+    Text: Ciao, come va?
     CharacterSprite: {fileID: 0}
   ParentNodes: []
+  ChildNode: {fileID: -4486794008235765233}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: SNOW
+  SentenceTextKey: Come va questa mattina?
+--- !u!114 &-445581529974258157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 691.9998
+    y: 244.40001
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: SNOW
+    Text: eh si, oggi fa abbastanza freddo!
+    CharacterSprite: {fileID: 0}
+  ParentNodes:
+  - {fileID: -4486794008235765233}
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
+  CharacterNameKey: SNOW
+  SentenceTextKey: Eh si, bisogna coprirsi bene!
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -155,10 +110,43 @@ MonoBehaviour:
   NodesList:
   - {fileID: -2236115093935518811}
   - {fileID: -4486794008235765233}
-  - {fileID: -5387657190218854448}
-  VariablesConfig: {fileID: 0}
+  - {fileID: 3287955660191651602}
+  - {fileID: -445581529974258157}
+  VariablesConfig: {fileID: 11400000, guid: 53d28c16ffa579a4582efa54cc9dcd24, type: 2}
   _localizationTableName: 
   _characterNamesLocalizationName: 
   NodeToDrawLineFrom: {fileID: 0}
   LinePosition: {x: 0, y: 0}
   IsLocalizationSetUp: 0
+--- !u!114 &3287955660191651602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 687.19977
+    y: 65.20015
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: SNOW
+    Text: Menomale, dai!
+    CharacterSprite: {fileID: 0}
+  ParentNodes:
+  - {fileID: -4486794008235765233}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: SNOW
+  SentenceTextKey: Menomale, dai!

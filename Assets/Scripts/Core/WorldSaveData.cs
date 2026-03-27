@@ -10,10 +10,7 @@ namespace OurGame.Core
         public int saveVersion;
         public long currentTick;
         public List<FarmGridSaveData> grids = new List<FarmGridSaveData>();
-
-        public List<InventorySlotSaveData> inventorySlots = new List<InventorySlotSaveData>();
-        public List<InventorySlotSaveData> hotbarSlots = new List<InventorySlotSaveData>();
-        public int selectedHotbarIndex;
+        public BackpackSaveData backpack = new BackpackSaveData();
     }
 
     [Serializable]

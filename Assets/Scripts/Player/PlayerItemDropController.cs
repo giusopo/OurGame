@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using OurGame.Systems;
 
 [DisallowMultipleComponent]
 public class PlayerItemDropController : MonoBehaviour
@@ -18,7 +19,7 @@ public class PlayerItemDropController : MonoBehaviour
     void Update()
     {
         Keyboard keyboard = Keyboard.current;
-        if (keyboard == null || InventorySystem.Instance.IsInventoryOpen)
+        if (keyboard == null || BackpackInventorySystem.Instance.IsInventoryOpen)
             return;
 
         if (keyboard.qKey.wasPressedThisFrame)
@@ -27,7 +28,7 @@ public class PlayerItemDropController : MonoBehaviour
 
     private void DropSelectedItem()
     {
-        if (!InventorySystem.Instance.TryTakeSelectedItem(1, out InventoryItemDefinition item, out int quantity))
+        if (!BackpackInventorySystem.Instance.TryTakeSelectedItem(1, out InventoryItemDefinition item, out int quantity))
             return;
 
         Vector3 dropCenter = GetDropCenter();

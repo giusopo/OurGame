@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20f107d085a8c4b4390f7038fa8ee0bd, type: 3}
+  m_Name: Tomato 1
+  m_EditorClassIdentifier: Assembly-CSharp::SimpleInventoryItemDefinition
+  displayName: Tomato
+  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  maxStack: 12
+  description: 
+  worldDropPrefab: {fileID: 3075875906654436999, guid: 78171ac00b8ba2741a3220bb0079a831, type: 3}
+  worldDropScale: {x: 0.35, y: 0.35, z: 0.35}
+  itemId: item_prova

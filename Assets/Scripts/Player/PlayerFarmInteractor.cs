@@ -1,5 +1,6 @@
 using UnityEngine;
 using OurGame.Core;
+using OurGame.Systems;
 
 [DisallowMultipleComponent]
 public class PlayerFarmInteractor : MonoBehaviour
@@ -46,12 +47,12 @@ public class PlayerFarmInteractor : MonoBehaviour
 
         if (currentTile.IsEmpty())
         {
-            PlantData selectedSeed = InventorySystem.Instance.GetSelectedItem() as PlantData;
+            PlantData selectedSeed = BackpackInventorySystem.Instance.GetSelectedItem() as PlantData;
 
             if (selectedSeed != null)
             {
                 currentTile.PlantSeed(selectedSeed, currentTick);
-                InventorySystem.Instance.TryConsumeSelectedItem(1);
+                BackpackInventorySystem.Instance.TryConsumeSelectedItem(1);
                 return true;
             }
 

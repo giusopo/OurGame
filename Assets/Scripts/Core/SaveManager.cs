@@ -9,7 +9,7 @@ namespace OurGame.Core
 {
     public class SaveManager : SingletonMono<SaveManager>
     {
-        private const int WorldStateSaveVersion = 2;
+        private const int WorldStateSaveVersion = 4;
 
         private string saveFile => Path.Combine(Application.persistentDataPath, "save.json");
 
@@ -19,10 +19,9 @@ namespace OurGame.Core
             {
                 saveVersion = WorldStateSaveVersion,
                 currentTick = TimeManager.Instance.CurrentTick,
-                grids = BuildGridSaveData()
+                grids = BuildGridSaveData(),
+                backpack = BackpackInventorySystem.Instance.BuildSaveData()
             };
-
-            SaveInventory(data);
 
             string json = JsonUtility.ToJson(data, true);
             File.WriteAllText(saveFile, json);
@@ -67,11 +66,7 @@ namespace OurGame.Core
             PrepareWorldForLoad(data.grids);
             LoadWorldState(data);
 
-            InventorySystem.Instance.LoadFromSave(
-                data.inventorySlots,
-                data.hotbarSlots,
-                data.selectedHotbarIndex
-            );
+            BackpackInventorySystem.Instance.LoadFromSave(data.backpack);
 
             Debug.Log("Game Loaded!");
         }
@@ -110,29 +105,6 @@ namespace OurGame.Core
             }
 
             return grids;
-        }
-
-        private void SaveInventory(SaveData data)
-        {
-            foreach (InventorySlotData slot in InventorySystem.Instance.MainSlots)
-            {
-                data.inventorySlots.Add(new InventorySlotSaveData
-                {
-                    itemId = slot.IsEmpty ? string.Empty : slot.Item.ItemId,
-                    quantity = slot.Quantity
-                });
-            }
-
-            foreach (InventorySlotData slot in InventorySystem.Instance.HotbarSlots)
-            {
-                data.hotbarSlots.Add(new InventorySlotSaveData
-                {
-                    itemId = slot.IsEmpty ? string.Empty : slot.Item.ItemId,
-                    quantity = slot.Quantity
-                });
-            }
-
-            data.selectedHotbarIndex = InventorySystem.Instance.SelectedHotbarIndex;
         }
 
         private void PrepareWorldForLoad(List<FarmGridSaveData> savedGrids)

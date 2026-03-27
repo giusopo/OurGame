@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using OurGame.Core;
+using OurGame.Systems;
 
 [DisallowMultipleComponent]
 public class DroppedItem : MonoBehaviour
@@ -11,6 +12,7 @@ public class DroppedItem : MonoBehaviour
     [SerializeField] private float pickupRadius = 1.15f;
     [SerializeField] private float collisionIgnoreDurationSeconds = 0.6f;
     [SerializeField] private float fallbackColliderRadius = 0.2f;
+
 
     private InventoryItemDefinition item;
     private int quantity;
@@ -81,7 +83,7 @@ public class DroppedItem : MonoBehaviour
         if (item == null || quantity <= 0 || !CanBePickedUp)
             return false;
 
-        if (!InventorySystem.Instance.TryAddItem(item, quantity))
+        if (!BackpackInventorySystem.Instance.TryAddItem(item, quantity))
             return false;
 
         Destroy(gameObject);

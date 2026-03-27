@@ -2,9 +2,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using OurGame.Systems;
-using OurGame.UI;
 
-public class InventorySlotView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class InventorySlotView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
     [Header("Scene References")]
     [SerializeField] private Image frameImage;
@@ -15,14 +14,14 @@ public class InventorySlotView : MonoBehaviour, IPointerClickHandler, IBeginDrag
     [SerializeField] private Text shortcutText;
     [SerializeField] private Text placeholderText;
 
-    private InventoryUIController owner;
-    private InventorySection section;
+    private PocketInventoryUIController pocketOwner;
+    private string pocketName;
     private int slotIndex;
     private bool referencesBound;
     private bool renderAsCursorGhost;
     private bool shortcutVisible = true;
 
-    public InventorySection Section => section;
+    public string PocketName => pocketName;
     public int SlotIndex => slotIndex;
 
     void Reset()
@@ -55,22 +54,17 @@ public class InventorySlotView : MonoBehaviour, IPointerClickHandler, IBeginDrag
             placeholderText.text = string.Empty;
     }
 
-    public void Configure(
-        InventoryUIController controller,
-        InventorySection slotSection,
-        int index,
-        string shortcutLabel
-    )
+    public void Configure(PocketInventoryUIController controller, string owningPocketName, int index)
     {
         CacheReferences();
 
-        owner = controller;
-        section = slotSection;
+        pocketOwner = controller;
+        pocketName = owningPocketName;
         slotIndex = index;
         EnsureVisualOrder();
 
         if (shortcutText != null)
-            shortcutText.text = shortcutLabel;
+            shortcutText.text = string.Empty;
     }
 
     public void Refresh(InventorySlotData slot, bool selected)
@@ -150,7 +144,7 @@ public class InventorySlotView : MonoBehaviour, IPointerClickHandler, IBeginDrag
 
         if (quantityText != null)
         {
-            quantityText.enabled = !renderAsCursorGhost;
+            quantityText.enabled = slot.Quantity > 1;
             quantityText.text = slot.Quantity > 1 ? slot.Quantity.ToString() : string.Empty;
         }
     }
@@ -161,6 +155,13 @@ public class InventorySlotView : MonoBehaviour, IPointerClickHandler, IBeginDrag
         shortcutVisible = visible;
         if (shortcutText != null)
             shortcutText.enabled = !renderAsCursorGhost && visible;
+    }
+
+    public void SetShortcutLabel(string label)
+    {
+        CacheReferences();
+        if (shortcutText != null)
+            shortcutText.text = label ?? string.Empty;
     }
 
     public void SetCursorGhostMode(bool enabled)
@@ -181,7 +182,7 @@ public class InventorySlotView : MonoBehaviour, IPointerClickHandler, IBeginDrag
             shortcutText.enabled = !enabled && shortcutVisible;
 
         if (quantityText != null)
-            quantityText.enabled = !enabled;
+            quantityText.enabled = quantityText.text.Length > 0;
 
         if (placeholderText != null)
             placeholderText.enabled = !enabled;
@@ -192,25 +193,67 @@ public class InventorySlotView : MonoBehaviour, IPointerClickHandler, IBeginDrag
         CacheReferences();
         if (frameImage != null)
             frameImage.raycastTarget = enabled;
+
+        if (backgroundImage != null)
+            backgroundImage.raycastTarget = enabled;
+
+        if (iconImage != null)
+            iconImage.raycastTarget = enabled;
+
+        if (selectionOverlay != null)
+            selectionOverlay.raycastTarget = enabled;
+
+        if (quantityText != null)
+            quantityText.raycastTarget = enabled;
+
+        if (shortcutText != null)
+            shortcutText.raycastTarget = enabled;
+
+        if (placeholderText != null)
+            placeholderText.raycastTarget = enabled;
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        owner?.HandleSlotClick(section, slotIndex, eventData.button);
+        if (pocketOwner != null)
+        {
+            if (eventData.button == PointerEventData.InputButton.Left)
+                pocketOwner.HandleSlotClick(pocketName, slotIndex);
+
+            return;
+        }
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        owner?.BeginSlotDrag(section, slotIndex, eventData);
+        if (eventData.button != PointerEventData.InputButton.Left || pocketOwner == null)
+            return;
+
+        pocketOwner.BeginSlotDrag(pocketName, slotIndex, eventData.position);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (pocketOwner == null)
+            return;
+
+        pocketOwner.UpdateDragPosition(eventData.position);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        owner?.EndSlotDrag(eventData);
+        if (pocketOwner == null)
+            return;
+
+        pocketOwner.EndSlotDrag();
+    }
+
+    public void OnDrop(PointerEventData eventData)
+    {
+        if (pocketOwner == null)
+            return;
+
+        pocketOwner.RegisterDropTarget(pocketName, slotIndex);
     }
 
     private void CacheReferences()

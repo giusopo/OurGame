@@ -1,4 +1,5 @@
 using UnityEngine;
+using OurGame.Systems;
 
 public class AstronautThirdPersonCamera : MonoBehaviour
 {
@@ -20,7 +21,7 @@ public class AstronautThirdPersonCamera : MonoBehaviour
     void LateUpdate()
     {
         if (!target) return;
-        bool inventoryOpen = InventorySystem.Instance.IsInventoryOpen;
+        bool inventoryOpen = BackpackInventorySystem.Instance != null && BackpackInventorySystem.Instance.IsInventoryOpen;
 
         // --- MOUSE ROTATION ---
         float mouseX = inventoryOpen ? 0f : Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;

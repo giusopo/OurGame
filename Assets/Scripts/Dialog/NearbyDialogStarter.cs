@@ -1,6 +1,7 @@
 using cherrydev;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using OurGame.Systems;
 
 [DisallowMultipleComponent]
 public class NearbyDialogStarter : MonoBehaviour
@@ -115,7 +116,6 @@ public class NearbyDialogStarter : MonoBehaviour
         }
 
         CloseInventoryIfOpen();
-        SetHotbarVisible(false);
         EnsureDialogSubscriptions(activeDialogBehaviour);
         CaptureCursorState();
         ApplyLockedCursorState();
@@ -212,21 +212,14 @@ public class NearbyDialogStarter : MonoBehaviour
 
     private void CloseInventoryIfOpen()
     {
-        if (InventorySystem.Instance != null && InventorySystem.Instance.IsInventoryOpen)
-            InventorySystem.Instance.SetInventoryOpen(false);
-    }
-
-    private void SetHotbarVisible(bool visible)
-    {
-        if (InventoryUIController.Instance != null)
-            InventoryUIController.Instance.SetHotbarVisible(visible);
+        if (BackpackInventorySystem.Instance != null && BackpackInventorySystem.Instance.IsInventoryOpen)
+            BackpackInventorySystem.Instance.CloseInventory();
     }
 
     private void HandleDialogFinished(DialogVariablesHandler _)
     {
         isDialogRunning = false;
         promptDelayRemaining = promptShowDelay;
-        SetHotbarVisible(true);
         RestoreCursorState();
     }
 
@@ -395,7 +388,7 @@ public class NearbyDialogStarter : MonoBehaviour
 
     private bool IsInventoryOpen()
     {
-        return InventorySystem.Instance != null && InventorySystem.Instance.IsInventoryOpen;
+        return BackpackInventorySystem.Instance != null && BackpackInventorySystem.Instance.IsInventoryOpen;
     }
 
     private void OnDrawGizmosSelected()
@@ -412,7 +405,6 @@ public class NearbyDialogStarter : MonoBehaviour
             subscribedDialogBehaviour.SentenceNodeActivated -= HandleSentenceNodeActivated;
         }
 
-        SetHotbarVisible(true);
         RestoreCursorState();
     }
 }

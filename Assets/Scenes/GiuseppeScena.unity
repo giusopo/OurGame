@@ -3334,7 +3334,7 @@ GameObject:
   - component: {fileID: 507341387}
   - component: {fileID: 507341386}
   m_Layer: 0
-  m_Name: InventoryUIController
+  m_Name: PocketInventoryUIController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3349,18 +3349,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 507341385}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a636af5123774344da77823050d2e21d, type: 3}
+  m_Script: {fileID: 11500000, guid: 4efb44fa7f296be44b2a6c7c2c0e4dd4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InventoryUIController
-  canvasRect: {fileID: 658463228}
+  m_EditorClassIdentifier: Assembly-CSharp::PocketInventoryUIController
+  canvasRoot: {fileID: 658463228}
   inventoryOverlay: {fileID: 1485189942}
   hotbarRoot: {fileID: 1251631999}
-  cursorRoot: {fileID: 1848615067}
-  inventoryGridRoot: {fileID: 366427183}
+  cursorStackRoot: {fileID: 1848615067}
   hotbarRowRoot: {fileID: 719479440}
-  selectedItemText: {fileID: 982857746}
-  cursorSlotView: {fileID: 512713096}
-  cursorDragOffset: {x: 0, y: 0}
+  hotbarSelectedItemText: {fileID: 982857746}
+  pocketPanels: []
 --- !u!4 &507341387
 Transform:
   m_ObjectHideFlags: 0

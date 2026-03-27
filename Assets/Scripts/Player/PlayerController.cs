@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Serialization;
+using OurGame.Systems;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
@@ -29,7 +30,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (InventorySystem.Instance.IsInventoryOpen)
+        if (BackpackInventorySystem.Instance.IsInventoryOpen)
         {
             moveForward = 0f;
             turn = 0f;
@@ -86,7 +87,7 @@ public class PlayerController : MonoBehaviour
         float currentYaw = rb.rotation.eulerAngles.y;
         float targetYaw = currentYaw;
 
-        if (InventorySystem.Instance.IsInventoryOpen)
+        if (BackpackInventorySystem.Instance.IsInventoryOpen)
         {
             rb.MoveRotation(Quaternion.Euler(0f, targetYaw, 0f));
             return;

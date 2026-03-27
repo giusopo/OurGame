@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using OurGame.Systems;
+using UnityEngine.InputSystem;
 
 [DisallowMultipleComponent]
 public class PlayerPocketHoverHighlighter : MonoBehaviour
@@ -23,8 +25,13 @@ public class PlayerPocketHoverHighlighter : MonoBehaviour
     private readonly List<HologramPieceHoverReveal> pocketReveals = new List<HologramPieceHoverReveal>();
     private readonly Dictionary<Collider, HologramPieceHoverReveal> colliderToReveal =
         new Dictionary<Collider, HologramPieceHoverReveal>();
+    private readonly Dictionary<HologramPieceHoverReveal, string> revealToPocketName =
+        new Dictionary<HologramPieceHoverReveal, string>();
 
     private HologramPieceHoverReveal currentReveal;
+    private string currentHoveredPocketName;
+
+    public string CurrentHoveredPocketName => currentHoveredPocketName;
 
     void Reset()
     {
@@ -78,8 +85,8 @@ public class PlayerPocketHoverHighlighter : MonoBehaviour
 
     private bool ShouldProcessHover()
     {
-        bool inventoryOpen = InventorySystem.Instance != null && InventorySystem.Instance.IsInventoryOpen;
-        return inventoryOpen || Input.GetMouseButton(1);
+        bool inventoryOpen = BackpackInventorySystem.Instance != null && BackpackInventorySystem.Instance.IsInventoryOpen;
+        return inventoryOpen || Cursor.visible || Input.GetMouseButton(1);
     }
 
     private void CachePocketReveals()
@@ -87,6 +94,7 @@ public class PlayerPocketHoverHighlighter : MonoBehaviour
         AutoAssignReferences();
         pocketReveals.Clear();
         colliderToReveal.Clear();
+        revealToPocketName.Clear();
 
         foreach (string pocketName in PocketNames)
         {
@@ -106,6 +114,7 @@ public class PlayerPocketHoverHighlighter : MonoBehaviour
             reveal.SetVisible(false);
             pocketReveals.Add(reveal);
             colliderToReveal[pieceCollider] = reveal;
+            revealToPocketName[reveal] = pocketName;
         }
     }
 
@@ -211,6 +220,9 @@ public class PlayerPocketHoverHighlighter : MonoBehaviour
             currentReveal.SetVisible(false);
 
         currentReveal = nextReveal;
+        currentHoveredPocketName = currentReveal != null && revealToPocketName.TryGetValue(currentReveal, out string pocketName)
+            ? pocketName
+            : null;
 
         if (currentReveal != null)
             currentReveal.SetVisible(true);

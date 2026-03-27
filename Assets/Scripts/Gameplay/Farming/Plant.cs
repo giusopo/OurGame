@@ -1,6 +1,7 @@
 using UnityEngine;
 using OurGame.Core;
 using OurGame.Core.Domain;
+using OurGame.Systems;
 
 public class Plant : MonoBehaviour
 {
@@ -157,7 +158,7 @@ public class Plant : MonoBehaviour
             return;
         }
 
-        if (!InventorySystem.Instance.TryAddItem(harvestItem, harvestAmount))
+        if (!BackpackInventorySystem.Instance.TryAddItem(harvestItem, harvestAmount))
         {
             Debug.Log("Inventario pieno: raccolto annullato.");
             return;

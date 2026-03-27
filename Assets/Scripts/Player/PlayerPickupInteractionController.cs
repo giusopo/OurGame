@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using OurGame.Systems;
 
 [DisallowMultipleComponent]
 public class PlayerPickupInteractionController : MonoBehaviour
@@ -322,7 +323,7 @@ public class PlayerPickupInteractionController : MonoBehaviour
 
     private bool IsInventoryOpen()
     {
-        return InventorySystem.Instance != null && InventorySystem.Instance.IsInventoryOpen;
+        return BackpackInventorySystem.Instance != null && BackpackInventorySystem.Instance.IsInventoryOpen;
     }
 
     private bool IsInteractionButtonCurrentlyPressed()

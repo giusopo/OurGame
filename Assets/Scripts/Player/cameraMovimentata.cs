@@ -1,4 +1,5 @@
 using UnityEngine;
+using OurGame.Systems;
 
 public class CameraController : MonoBehaviour
 {
@@ -14,8 +15,9 @@ public class CameraController : MonoBehaviour
     public float maxPitch = 60f;
 
     private float currentYaw = 0f;
-    private float currentPitch = 10f;
+    private float currentPitch = 100f;
     private float lastTargetYaw;
+    private Vector3 localOrbitOffset;
     private bool initialized;
 
     void Start()
@@ -30,7 +32,7 @@ public class CameraController : MonoBehaviour
 
         InitializeFromTarget();
 
-        bool inventoryOpen = InventorySystem.Instance != null && InventorySystem.Instance.IsInventoryOpen;
+        bool inventoryOpen = BackpackInventorySystem.Instance != null && BackpackInventorySystem.Instance.IsInventoryOpen;
         bool freeCursorMode = inventoryOpen || Input.GetMouseButton(1);
 
         ApplyCursorState(freeCursorMode);
@@ -55,8 +57,8 @@ public class CameraController : MonoBehaviour
         // rotazione camera completa (yaw + pitch)
         Quaternion rotation = Quaternion.Euler(currentPitch, currentYaw, 0);
 
-        // offset camera
-        Vector3 offset = rotation * new Vector3(0, height, -distance);
+        // Use the scene-authored camera placement as the base orbit offset.
+        Vector3 offset = rotation * localOrbitOffset;
 
         transform.position = target.position + offset;
 
@@ -69,9 +71,34 @@ public class CameraController : MonoBehaviour
         if (initialized || target == null)
             return;
 
-        currentYaw = target.eulerAngles.y;
-        lastTargetYaw = currentYaw;
+        Vector3 worldOffset = transform.position - target.position;
+        Vector3 euler = transform.rotation.eulerAngles;
+
+        currentYaw = euler.y;
+        currentPitch = NormalizeAngle(euler.x);
+        currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
+        lastTargetYaw = target.eulerAngles.y;
+
+        Quaternion rotation = Quaternion.Euler(currentPitch, currentYaw, 0f);
+        localOrbitOffset = Quaternion.Inverse(rotation) * worldOffset;
+
+        if (localOrbitOffset.sqrMagnitude < 0.0001f)
+            localOrbitOffset = new Vector3(0f, height, -Mathf.Max(0.01f, distance));
+
+        height = localOrbitOffset.y;
+        distance = Mathf.Max(0.01f, Mathf.Abs(localOrbitOffset.z));
         initialized = true;
+    }
+
+    private static float NormalizeAngle(float angle)
+    {
+        while (angle > 180f)
+            angle -= 360f;
+
+        while (angle < -180f)
+            angle += 360f;
+
+        return angle;
     }
 
     private void ApplyCursorState(bool freeCursorMode)

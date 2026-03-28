@@ -23,30 +23,37 @@ namespace OurGame.Systems
         public IReadOnlyDictionary<string, Pocket> Pockets => pockets;
         public IReadOnlyList<InventorySlotData> HotbarSlots => hotbarSlots;
 
-        public Backpack(IEnumerable<KeyValuePair<string, int>> capacities)
+        public Backpack(IEnumerable<BackpackPocketDefinition> definitions)
         {
-            Initialize(capacities);
+            Initialize(definitions);
         }
 
-        public void Initialize(IEnumerable<KeyValuePair<string, int>> capacities)
+        public void Initialize(IEnumerable<BackpackPocketDefinition> definitions)
         {
             pockets.Clear();
             serializedPockets.Clear();
             pocketOrder.Clear();
 
-            foreach (KeyValuePair<string, int> pair in capacities)
+            if (definitions != null)
             {
-                Pocket pocket = new Pocket(pair.Key, pair.Value);
-                pockets[pair.Key] = pocket;
-                serializedPockets.Add(pocket);
-                pocketOrder.Add(pair.Key);
+                foreach (BackpackPocketDefinition definition in definitions)
+                {
+                    if (definition == null || string.IsNullOrWhiteSpace(definition.PocketName))
+                        continue;
+
+                    Pocket pocket = new Pocket(definition.PocketName, definition.Capacity);
+                    pockets[definition.PocketName] = pocket;
+                    serializedPockets.Add(pocket);
+                    pocketOrder.Add(definition.PocketName);
+                }
             }
 
             if (pocketOrder.Count == 0)
             {
                 for (int i = 0; i < PocketNames.Ordered.Length; i++)
                 {
-                    Pocket pocket = new Pocket(PocketNames.Ordered[i], 4);
+                    BackpackPocketDefinition definition = BackpackPocketDefinition.CreateDefault(PocketNames.Ordered[i]);
+                    Pocket pocket = new Pocket(definition.PocketName, definition.Capacity);
                     pockets[pocket.Name] = pocket;
                     serializedPockets.Add(pocket);
                     pocketOrder.Add(pocket.Name);

@@ -9,24 +9,20 @@ namespace OurGame.Systems
     [DisallowMultipleComponent]
     public class BackpackInventorySystem : SingletonMono<BackpackInventorySystem>
     {
-        [Serializable]
-        private class PocketCapacityConfig
-        {
-            public string pocketName;
-            public int capacity = 4;
-        }
-
-        [SerializeField] private List<PocketCapacityConfig> pocketConfigs = new List<PocketCapacityConfig>();
+        [SerializeField] private BackpackDefinition activeBackpackDefinition;
 
         private Backpack backpack;
         private string currentOpenPocket;
         private BackpackInteraction backpackInteraction;
+        private readonly List<BackpackPocketDefinition> activePocketDefinitions = new List<BackpackPocketDefinition>();
         private const int HotbarSlotCount = 4;
 
         public Backpack Backpack => backpack;
         public string CurrentOpenPocket => currentOpenPocket;
         public bool IsInventoryOpen => !string.IsNullOrWhiteSpace(currentOpenPocket);
         public string ActivePocketName => backpack != null ? backpack.ActivePocketName : string.Empty;
+        public BackpackDefinition ActiveBackpackDefinition => activeBackpackDefinition;
+        public IReadOnlyList<BackpackPocketDefinition> PocketDefinitions => activePocketDefinitions;
 
         public event Action<string> OnPocketOpened;
         public event Action OnPocketClosed;
@@ -35,7 +31,8 @@ namespace OurGame.Systems
         protected override void Awake()
         {
             base.Awake();
-            EnsureDefaultConfigs();
+            ResolveActiveBackpackDefinition();
+            RefreshPocketDefinitions();
             InitializeBackpack();
             EnsureBackpackInteraction();
         }
@@ -208,69 +205,102 @@ namespace OurGame.Systems
 
         public void LoadFromSave(BackpackSaveData saveData)
         {
-            EnsureDefaultConfigs();
+            ResolveActiveBackpackDefinition();
+            RefreshPocketDefinitions();
             InitializeBackpack();
             backpack.LoadFromSave(saveData);
             currentOpenPocket = null;
             OnInventoryChanged?.Invoke(string.Empty);
         }
 
-        private void InitializeBackpack()
+        public BackpackPocketDefinition GetPocketDefinition(string pocketName)
         {
-            List<KeyValuePair<string, int>> capacities = new List<KeyValuePair<string, int>>();
-            for (int i = 0; i < pocketConfigs.Count; i++)
-                capacities.Add(new KeyValuePair<string, int>(pocketConfigs[i].pocketName, pocketConfigs[i].capacity));
+            if (string.IsNullOrWhiteSpace(pocketName))
+                return null;
 
-            backpack = new Backpack(capacities);
-        }
-
-        private void EnsureDefaultConfigs()
-        {
-            pocketConfigs ??= new List<PocketCapacityConfig>();
-
-            EnsurePocketConfig(PocketNames.LeftPocket, 2);
-            EnsurePocketConfig(PocketNames.RightPocket, 2);
-            EnsurePocketConfig(PocketNames.CentralPocket, 9);
-            EnsurePocketConfig(PocketNames.UpperPocket, 4);
-            EnsurePocketConfig(PocketNames.BottomPocket, 4);
-
-            pocketConfigs.RemoveAll(config =>
-                config == null ||
-                string.IsNullOrWhiteSpace(config.pocketName) ||
-                Array.IndexOf(PocketNames.Ordered, config.pocketName) < 0
-            );
-
-            pocketConfigs.Sort((a, b) =>
-                Array.IndexOf(PocketNames.Ordered, a.pocketName).CompareTo(
-                    Array.IndexOf(PocketNames.Ordered, b.pocketName)
-                )
-            );
-        }
-
-        private void EnsurePocketConfig(string pocketName, int capacity)
-        {
-            PocketCapacityConfig config = pocketConfigs.Find(existing => existing.pocketName == pocketName);
-            if (config == null)
+            for (int i = 0; i < activePocketDefinitions.Count; i++)
             {
-                pocketConfigs.Add(new PocketCapacityConfig
-                {
-                    pocketName = pocketName,
-                    capacity = capacity
-                });
-                return;
+                if (activePocketDefinitions[i].PocketName == pocketName)
+                    return activePocketDefinitions[i];
             }
 
-            config.capacity = capacity;
+            return null;
+        }
+
+        public void SetActiveBackpack(BackpackDefinition definition, bool preserveContents = true)
+        {
+            BackpackSaveData previousSave = preserveContents && backpack != null
+                ? backpack.ToSaveData()
+                : null;
+
+            activeBackpackDefinition = definition;
+            RefreshPocketDefinitions();
+            InitializeBackpack();
+            EnsureBackpackInteraction();
+
+            if (previousSave != null)
+                backpack.LoadFromSave(previousSave);
+
+            currentOpenPocket = null;
+            OnPocketClosed?.Invoke();
+            OnInventoryChanged?.Invoke(string.Empty);
+        }
+
+        private void InitializeBackpack()
+        {
+            backpack = new Backpack(activePocketDefinitions);
+        }
+
+        private void ResolveActiveBackpackDefinition()
+        {
+            if (activeBackpackDefinition != null)
+                return;
+
+            activeBackpackDefinition = FindFirstObjectByType<BackpackDefinition>();
+
+            if (activeBackpackDefinition == null)
+            {
+                Transform backpackRoot = FindBackpackRoot();
+                if (backpackRoot != null)
+                    activeBackpackDefinition = backpackRoot.GetComponent<BackpackDefinition>();
+            }
+
+            if (activeBackpackDefinition == null)
+            {
+                Transform backpackRoot = FindBackpackRoot();
+                if (backpackRoot != null)
+                    activeBackpackDefinition = backpackRoot.gameObject.AddComponent<BackpackDefinition>();
+            }
+        }
+
+        private void RefreshPocketDefinitions()
+        {
+            activePocketDefinitions.Clear();
+
+            if (activeBackpackDefinition != null)
+                activePocketDefinitions.AddRange(activeBackpackDefinition.GetDefinitionsSnapshot());
+
+            if (activePocketDefinitions.Count == 0)
+            {
+                for (int i = 0; i < PocketNames.Ordered.Length; i++)
+                    activePocketDefinitions.Add(BackpackPocketDefinition.CreateDefault(PocketNames.Ordered[i]));
+            }
         }
 
         private void EnsureBackpackInteraction()
         {
+            Transform backpackRoot = FindBackpackRoot();
+
+            if (backpackInteraction == null)
+                backpackInteraction = backpackRoot != null
+                    ? backpackRoot.GetComponent<BackpackInteraction>()
+                    : null;
+
             if (backpackInteraction == null)
                 backpackInteraction = FindFirstObjectByType<BackpackInteraction>();
 
             if (backpackInteraction == null)
             {
-                Transform backpackRoot = FindBackpackRoot();
                 if (backpackRoot != null)
                     backpackInteraction = backpackRoot.gameObject.AddComponent<BackpackInteraction>();
             }
@@ -284,6 +314,13 @@ namespace OurGame.Systems
 
         private Transform FindBackpackRoot()
         {
+            if (activeBackpackDefinition != null)
+                return activeBackpackDefinition.transform;
+
+            BackpackDefinition definition = FindFirstObjectByType<BackpackDefinition>();
+            if (definition != null)
+                return definition.transform;
+
             Transform[] transforms = FindObjectsByType<Transform>(FindObjectsSortMode.None);
             for (int i = 0; i < transforms.Length; i++)
             {

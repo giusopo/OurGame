@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using OurGame.Systems;
@@ -8,16 +9,8 @@ public class PlayerPocketHoverHighlighter : MonoBehaviour
 {
     private const string HologramObjectName = "AstronautBackpackHologram";
 
-    private static readonly string[] PocketNames =
-    {
-        "LeftPocket",
-        "RightPocket",
-        "CentralPocket",
-        "BottomPocket",
-        "UpperPocket",
-    };
-
     [SerializeField] private Transform hologramRoot;
+    [SerializeField] private BackpackDefinition backpackDefinition;
     [SerializeField] private Camera hoverCamera;
     [SerializeField] private LayerMask pocketRaycastMask = Physics.DefaultRaycastLayers;
     [SerializeField] private float rayDistance = 15f;
@@ -51,6 +44,8 @@ public class PlayerPocketHoverHighlighter : MonoBehaviour
 
     void LateUpdate()
     {
+        RefreshPocketRevealsIfNeeded();
+
         if (!ShouldProcessHover())
         {
             SetCurrentReveal(null);
@@ -96,8 +91,12 @@ public class PlayerPocketHoverHighlighter : MonoBehaviour
         colliderToReveal.Clear();
         revealToPocketName.Clear();
 
-        foreach (string pocketName in PocketNames)
+        foreach (BackpackPocketDefinition definition in GetPocketDefinitions())
         {
+            if (definition == null || string.IsNullOrWhiteSpace(definition.PocketName))
+                continue;
+
+            string pocketName = definition.PocketName;
             Transform pocketTransform = FindPocketTransform(pocketName);
             if (pocketTransform == null)
                 continue;
@@ -202,8 +201,49 @@ public class PlayerPocketHoverHighlighter : MonoBehaviour
 
     private void AutoAssignReferences()
     {
+        if (backpackDefinition == null)
+            backpackDefinition = FindFirstObjectByType<BackpackDefinition>();
+
+        if (hologramRoot == null && backpackDefinition != null && backpackDefinition.HologramRoot != null)
+            hologramRoot = backpackDefinition.HologramRoot;
+
         if (hologramRoot == null)
             hologramRoot = FindDescendantByName(transform, HologramObjectName);
+    }
+
+    private void RefreshPocketRevealsIfNeeded()
+    {
+        List<BackpackPocketDefinition> definitions = GetPocketDefinitions();
+        if (definitions.Count != pocketReveals.Count)
+        {
+            CachePocketReveals();
+            return;
+        }
+
+        for (int i = 0; i < definitions.Count; i++)
+        {
+            if (!revealToPocketName.ContainsValue(definitions[i].PocketName))
+            {
+                CachePocketReveals();
+                return;
+            }
+        }
+    }
+
+    private List<BackpackPocketDefinition> GetPocketDefinitions()
+    {
+        if (BackpackInventorySystem.Instance != null && BackpackInventorySystem.Instance.PocketDefinitions.Count > 0)
+            return new List<BackpackPocketDefinition>(BackpackInventorySystem.Instance.PocketDefinitions);
+
+        AutoAssignReferences();
+        if (backpackDefinition != null)
+            return backpackDefinition.GetDefinitionsSnapshot();
+
+        List<BackpackPocketDefinition> fallback = new List<BackpackPocketDefinition>();
+        for (int i = 0; i < PocketNames.Ordered.Length; i++)
+            fallback.Add(BackpackPocketDefinition.CreateDefault(PocketNames.Ordered[i]));
+
+        return fallback;
     }
 
     private bool IsKnownPocketReveal(HologramPieceHoverReveal reveal)

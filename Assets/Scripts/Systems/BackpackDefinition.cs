@@ -17,18 +17,24 @@ namespace OurGame.Systems
         void Reset()
         {
             AutoAssignReferences();
-            EnsureDefinitions();
+            if (pocketDefinitions == null || pocketDefinitions.Count == 0)
+                pocketDefinitions = BuildDefinitionsSnapshotFromBackpackVisuals();
+
+            NormalizeDefinitions();
         }
 
         void OnValidate()
         {
             AutoAssignReferences();
-            EnsureDefinitions();
+            NormalizeDefinitions();
         }
 
         public List<BackpackPocketDefinition> GetDefinitionsSnapshot()
         {
-            EnsureDefinitions();
+            NormalizeDefinitions();
+
+            if (!HasUsableDefinitions())
+                return BuildDefinitionsSnapshotFromBackpackVisuals();
 
             List<BackpackPocketDefinition> snapshot = new List<BackpackPocketDefinition>();
             HashSet<string> seen = new HashSet<string>();
@@ -55,13 +61,10 @@ namespace OurGame.Systems
                 hologramRoot = FindDescendantByName(transform, HologramObjectName);
         }
 
-        private void EnsureDefinitions()
+        private void NormalizeDefinitions()
         {
             if (pocketDefinitions == null)
                 pocketDefinitions = new List<BackpackPocketDefinition>();
-
-            if (pocketDefinitions.Count == 0)
-                BuildDefinitionsFromBackpackVisuals();
 
             HashSet<string> seen = new HashSet<string>();
             for (int i = pocketDefinitions.Count - 1; i >= 0; i--)
@@ -79,11 +82,24 @@ namespace OurGame.Systems
             }
         }
 
-        private void BuildDefinitionsFromBackpackVisuals()
+        private bool HasUsableDefinitions()
         {
+            for (int i = 0; i < pocketDefinitions.Count; i++)
+            {
+                BackpackPocketDefinition definition = pocketDefinitions[i];
+                if (definition != null && !string.IsNullOrWhiteSpace(definition.PocketName))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private List<BackpackPocketDefinition> BuildDefinitionsSnapshotFromBackpackVisuals()
+        {
+            List<BackpackPocketDefinition> definitions = new List<BackpackPocketDefinition>();
             Transform searchRoot = hologramRoot != null ? hologramRoot : transform;
             if (searchRoot == null)
-                return;
+                return definitions;
 
             for (int i = 0; i < PocketNames.Ordered.Length; i++)
             {
@@ -91,8 +107,10 @@ namespace OurGame.Systems
                 if (FindDescendantByName(searchRoot, pocketName) == null)
                     continue;
 
-                pocketDefinitions.Add(BackpackPocketDefinition.CreateDefault(pocketName));
+                definitions.Add(BackpackPocketDefinition.CreateDefault(pocketName));
             }
+
+            return definitions;
         }
 
         private static Transform FindDescendantByName(Transform root, string objectName)

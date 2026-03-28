@@ -17,6 +17,14 @@ namespace OurGame.Systems
         public int Columns => Mathf.Max(1, columns);
         public int Capacity => Rows * Columns;
 
+        public BackpackPocketDefinition()
+        {
+            pocketName = string.Empty;
+            displayName = string.Empty;
+            rows = 1;
+            columns = 1;
+        }
+
         public BackpackPocketDefinition(string pocketName, string displayName, int rows, int columns)
         {
             this.pocketName = pocketName;

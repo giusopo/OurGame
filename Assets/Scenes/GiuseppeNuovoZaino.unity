@@ -4492,13 +4492,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 409475250}
   serializedVersion: 2
-  m_LocalRotation: {x: 5.287575e-10, y: 0.97897553, z: -0.20397773, w: 4.8550497e-11}
+  m_LocalRotation: {x: 0, y: 0.97904545, z: -0.20364177, w: 0}
   m_LocalPosition: {x: -0, y: 1.766, z: 2.513}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1277214343}
-  m_LocalEulerAnglesHint: {x: 23.539, y: 180, z: 0}
+  m_LocalEulerAnglesHint: {x: 23.5, y: 180, z: 0}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -7373,6 +7373,7 @@ MonoBehaviour:
   cursorStackRoot: {fileID: 395255340}
   hotbarRowRoot: {fileID: 997682671}
   hotbarSelectedItemText: {fileID: 1076672532}
+  pocketUiRevealDelay: 0.18
   pocketPanels:
   - pocketName: CentralPocket
     panelRoot: {fileID: 1128770907}
@@ -8106,6 +8107,9 @@ MonoBehaviour:
   returnSpeed: 4
   minPitch: -20
   maxPitch: 60
+  inventoryFocusDuration: 0.6
+  inventoryReturnDuration: 0.5
+  inventoryFocusFov: 40
 --- !u!4 &704549408 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -6881390770214846263, guid: faf74221f72549b4dbee1d7c75cb792a, type: 3}
@@ -16585,13 +16589,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1680907532}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.108, y: 1.083, z: 2.866}
+  m_LocalRotation: {x: 0, y: 0.97904545, z: -0.20364177, w: 0}
+  m_LocalPosition: {x: 0, y: 1.083, z: 2.866}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1277214343}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 23.5, y: 180, z: 0}
 --- !u!1 &1694463008
 GameObject:
   m_ObjectHideFlags: 0

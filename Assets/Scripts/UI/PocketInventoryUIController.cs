@@ -41,6 +41,7 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
     [SerializeField] private RectTransform cursorStackRoot;
     [SerializeField] private Transform hotbarRowRoot;
     [SerializeField] private Text hotbarSelectedItemText;
+    [SerializeField] private float pocketUiRevealDelay = 0.18f;
     [SerializeField] private List<PocketPanelBinding> pocketPanels = new List<PocketPanelBinding>();
 
     private readonly Dictionary<string, PocketPanelBinding> panelByPocket =
@@ -56,6 +57,7 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
     private int dragSourceIndex = -1;
     private string pendingDropContainerName;
     private int pendingDropIndex = -1;
+    private Coroutine pendingPocketShowRoutine;
 
     void OnValidate()
     {
@@ -176,6 +178,7 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
 
     public void HideAllUIs()
     {
+        CancelPendingPocketReveal();
         HideAllPanels();
         ResetDragState();
 
@@ -296,7 +299,13 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
 
     private void HandlePocketOpened(string pocketName)
     {
-        ShowPocketUI(pocketName);
+        if (!Application.isPlaying || pocketUiRevealDelay <= 0f)
+        {
+            ShowPocketUI(pocketName);
+            return;
+        }
+
+        SchedulePocketReveal(pocketName);
     }
 
     private void HandlePocketClosed()
@@ -774,6 +783,35 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
         cursorSlotView = cursorStackRoot.GetComponentInChildren<InventorySlotView>(true);
     }
 
+    private void SchedulePocketReveal(string pocketName)
+    {
+        CancelPendingPocketReveal();
+        pendingPocketShowRoutine = StartCoroutine(DelayedShowPocketUI(pocketName));
+    }
+
+    private System.Collections.IEnumerator DelayedShowPocketUI(string pocketName)
+    {
+        yield return new WaitForSeconds(pocketUiRevealDelay);
+        pendingPocketShowRoutine = null;
+
+        if (inventorySystem == null || !inventorySystem.IsInventoryOpen)
+            yield break;
+
+        if (!string.Equals(inventorySystem.CurrentOpenPocket, pocketName, StringComparison.Ordinal))
+            yield break;
+
+        ShowPocketUI(pocketName);
+    }
+
+    private void CancelPendingPocketReveal()
+    {
+        if (pendingPocketShowRoutine == null)
+            return;
+
+        StopCoroutine(pendingPocketShowRoutine);
+        pendingPocketShowRoutine = null;
+    }
+
     private void ResetDragState()
     {
         isDragging = false;
@@ -1044,6 +1082,7 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
 
     void OnDestroy()
     {
+        CancelPendingPocketReveal();
         Unsubscribe();
     }
 }

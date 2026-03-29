@@ -23,7 +23,18 @@ public class InventoryOverlayDismissRegion : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (eventData.button != PointerEventData.InputButton.Left || controller == null)
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        AutoAssignReferences();
+        if (controller == null)
+            return;
+
+        GameObject raycastTarget =
+            eventData.pointerCurrentRaycast.gameObject ??
+            eventData.pointerPressRaycast.gameObject;
+
+        if (raycastTarget != gameObject)
             return;
 
         controller.HandleOverlayBackgroundClick();

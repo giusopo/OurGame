@@ -16,6 +16,14 @@ using UnityEditor.SceneManagement;
 [DisallowMultipleComponent]
 public class PocketInventoryUIController : SingletonMono<PocketInventoryUIController>
 {
+    private const string InventoryCanvasTag = "InventoryCanvas";
+    private const string InventoryOverlayTag = "InventoryOverlay";
+    private const string CentralPocketTag = "CentralPocketUI";
+    private const string BottomPocketTag = "BottomPocketUI";
+    private const string UpperPocketTag = "UpperPocketUI";
+    private const string LeftPocketTag = "LeftPocketUI";
+    private const string RightPocketTag = "RightPocketUI";
+
     [Serializable]
     private class PocketPanelBinding
     {
@@ -154,6 +162,11 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
             return;
         }
 
+        AttachCanvasToPocketAnchor(pocketName);
+
+        if (canvasRoot != null)
+            canvasRoot.gameObject.SetActive(true);
+
         if (inventoryOverlay != null)
             inventoryOverlay.gameObject.SetActive(true);
 
@@ -165,6 +178,9 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
     {
         HideAllPanels();
         ResetDragState();
+
+        if (canvasRoot != null)
+            canvasRoot.gameObject.SetActive(false);
 
         if (inventoryOverlay != null)
             inventoryOverlay.gameObject.SetActive(false);
@@ -388,7 +404,7 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
             if (binding == null || string.IsNullOrWhiteSpace(binding.pocketName))
                 continue;
 
-            binding.panelRoot ??= ResolvePocketPanelRoot(binding.pocketName);
+            binding.panelRoot = ResolvePocketPanelRoot(binding.pocketName);
             if (binding.panelRoot == null)
                 continue;
 
@@ -442,7 +458,9 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
 
     private void AutoAssignReferences()
     {
+        canvasRoot ??= FindRectByTag(InventoryCanvasTag);
         canvasRoot ??= FindRectByName("InventoryCanvas");
+        inventoryOverlay ??= FindRectByTag(InventoryOverlayTag);
         inventoryOverlay ??= FindRectByName("InventoryOverlay");
         hotbarRoot ??= FindRectByName("HotbarRoot");
         cursorStackRoot ??= FindRectByName("CursorStack");
@@ -469,13 +487,84 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
         return definition != null ? definition.Columns : 1;
     }
 
-    private PocketPanelBinding CreateBinding(string pocketName, string panelObjectName)
+    private PocketPanelBinding CreateBinding(string pocketName)
     {
         return new PocketPanelBinding
         {
             pocketName = pocketName,
-            panelRoot = FindRectByName(panelObjectName)
+            panelRoot = ResolvePocketPanelRoot(pocketName)
         };
+    }
+
+    private void AttachCanvasToPocketAnchor(string pocketName)
+    {
+        if (canvasRoot == null || string.IsNullOrWhiteSpace(pocketName))
+            return;
+
+        Transform pocketAnchor = ResolvePocketAnchor(pocketName);
+        if (pocketAnchor == null)
+        {
+            Debug.LogWarning(
+                $"PocketInventoryUIController could not find UI anchor '{GetPocketAnchorName(pocketName)}' for pocket '{pocketName}'."
+            );
+            return;
+        }
+
+        if (canvasRoot.parent != pocketAnchor)
+            canvasRoot.SetParent(pocketAnchor, false);
+
+        canvasRoot.localPosition = Vector3.zero;
+        canvasRoot.localRotation = Quaternion.identity;
+
+        Canvas canvas = canvasRoot.GetComponent<Canvas>();
+        if (canvas != null)
+        {
+            canvas.renderMode = RenderMode.WorldSpace;
+            EnsureCanvasWorldCamera(canvas);
+        }
+    }
+
+    private void EnsureCanvasWorldCamera(Canvas canvas)
+    {
+        if (canvas == null)
+            return;
+
+        if (canvas.worldCamera != null && canvas.worldCamera.isActiveAndEnabled)
+            return;
+
+        Camera resolvedCamera = ResolveInventoryUICamera();
+        if (resolvedCamera != null)
+            canvas.worldCamera = resolvedCamera;
+    }
+
+    private Camera ResolveInventoryUICamera()
+    {
+        if (Camera.main != null && Camera.main.isActiveAndEnabled)
+            return Camera.main;
+
+        Camera[] cameras = FindObjectsByType<Camera>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < cameras.Length; i++)
+        {
+            Camera candidate = cameras[i];
+            if (candidate == null || !candidate.isActiveAndEnabled)
+                continue;
+
+            return candidate;
+        }
+
+        return null;
+    }
+
+    private Transform ResolvePocketAnchor(string pocketName)
+    {
+        return FindTransformByName(GetPocketAnchorName(pocketName));
+    }
+
+    private string GetPocketAnchorName(string pocketName)
+    {
+        return string.IsNullOrWhiteSpace(pocketName)
+            ? string.Empty
+            : $"{pocketName}UIAnchor";
     }
 
     private void HideAllPanels()
@@ -520,6 +609,28 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
         return null;
     }
 
+    private RectTransform FindRectByTag(string tagName)
+    {
+        RectTransform localMatch =
+            FindDescendantByTag(inventoryOverlay, tagName) as RectTransform ??
+            FindDescendantByTag(canvasRoot, tagName) as RectTransform;
+        if (localMatch != null)
+            return localMatch;
+
+        Transform[] transforms = Resources.FindObjectsOfTypeAll<Transform>();
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform candidate = transforms[i];
+            if (candidate == null || !candidate.gameObject.scene.IsValid())
+                continue;
+
+            if (candidate.gameObject.tag == tagName)
+                return candidate as RectTransform;
+        }
+
+        return null;
+    }
+
     private Transform FindTransformByName(string objectName)
     {
         Transform localMatch =
@@ -553,6 +664,25 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
                 return child;
 
             Transform nested = FindDescendantByName(child, objectName);
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
+    }
+
+    private Transform FindDescendantByTag(Transform root, string tagName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(tagName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child.gameObject.tag == tagName)
+                return child;
+
+            Transform nested = FindDescendantByTag(child, tagName);
             if (nested != null)
                 return nested;
         }
@@ -707,9 +837,9 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
             );
 
             if (binding == null)
-                binding = CreateBinding(definition.PocketName, $"Inventory{definition.PocketName}");
+                binding = CreateBinding(definition.PocketName);
 
-            binding.panelRoot ??= ResolvePocketPanelRoot(definition.PocketName);
+            binding.panelRoot = ResolvePocketPanelRoot(definition.PocketName);
             if (binding.selectedItemText == null && binding.panelRoot != null)
                 binding.selectedItemText = FindTextByName(binding.panelRoot, "SelectedItem");
 
@@ -750,8 +880,7 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
             if (binding == null || binding.pocketName != pocketName)
                 continue;
 
-            if (binding.panelRoot == null)
-                binding.panelRoot = ResolvePocketPanelRoot(pocketName);
+            binding.panelRoot = ResolvePocketPanelRoot(pocketName);
 
             if (binding.selectedItemText == null && binding.panelRoot != null)
                 binding.selectedItemText = FindTextByName(binding.panelRoot, "SelectedItem");
@@ -778,7 +907,25 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
 
     private RectTransform ResolvePocketPanelRoot(string pocketName)
     {
-        return FindRectByName($"Inventory{pocketName}");
+        string pocketPanelTag = GetPocketPanelTag(pocketName);
+        if (string.IsNullOrWhiteSpace(pocketPanelTag))
+            return null;
+
+        return FindRectByTag(pocketPanelTag);
+    }
+
+    private string GetPocketPanelTag(string pocketName)
+    {
+        return pocketName switch
+        {
+            PocketNames.CentralPocket => CentralPocketTag,
+            PocketNames.LeftPocket => LeftPocketTag,
+            PocketNames.RightPocket => RightPocketTag,
+            PocketNames.UpperPocket => UpperPocketTag,
+            // Il pocket runtime si chiama BottomPocket, mentre il pannello UI usa il tag BottomPocketUI.
+            PocketNames.BottomPocket => BottomPocketTag,
+            _ => string.Empty
+        };
     }
 
     private bool EnsurePanelMatchesPocket(RectTransform panelRoot, string pocketName)
@@ -878,7 +1025,7 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
         List<BackpackPocketDefinition> definitions = GetEffectivePocketDefinitions();
         for (int i = 0; i < definitions.Count; i++)
         {
-            RectTransform panelRoot = FindRectByName($"Inventory{definitions[i].PocketName}");
+            RectTransform panelRoot = ResolvePocketPanelRoot(definitions[i].PocketName);
             if (panelRoot != null)
                 changed |= EnsurePanelMatchesPocket(panelRoot, definitions[i].PocketName);
         }

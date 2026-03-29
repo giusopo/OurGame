@@ -68,10 +68,10 @@ namespace OurGame.Systems
                 return;
 
             if (currentOpenPocket == pocketName)
-            {
-                CloseInventory();
                 return;
-            }
+
+            if (IsInventoryOpen)
+                return;
 
             Pocket pocket = GetPocket(pocketName);
             if (pocket == null)

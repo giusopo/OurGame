@@ -123,13 +123,16 @@ public class PlayerPocketHoverHighlighter : MonoBehaviour
             return null;
 
         if (colliderToReveal.TryGetValue(hitCollider, out HologramPieceHoverReveal cachedReveal))
-            return cachedReveal;
+            return IsRevealForActivePocket(cachedReveal) ? null : cachedReveal;
 
         HologramPieceHoverReveal reveal = hitCollider.GetComponent<HologramPieceHoverReveal>();
         if (reveal == null)
             reveal = hitCollider.GetComponentInParent<HologramPieceHoverReveal>();
 
         if (!IsKnownPocketReveal(reveal))
+            return null;
+
+        if (IsRevealForActivePocket(reveal))
             return null;
 
         colliderToReveal[hitCollider] = reveal;
@@ -249,6 +252,18 @@ public class PlayerPocketHoverHighlighter : MonoBehaviour
     private bool IsKnownPocketReveal(HologramPieceHoverReveal reveal)
     {
         return reveal != null && pocketReveals.Contains(reveal);
+    }
+
+    private bool IsRevealForActivePocket(HologramPieceHoverReveal reveal)
+    {
+        if (reveal == null || !revealToPocketName.TryGetValue(reveal, out string pocketName))
+            return false;
+
+        if (!BackpackInventorySystem.TryGetInstance(out var inventorySystem) || inventorySystem == null)
+            return false;
+
+        return inventorySystem.IsInventoryOpen &&
+            string.Equals(inventorySystem.CurrentOpenPocket, pocketName, StringComparison.Ordinal);
     }
 
     private void SetCurrentReveal(HologramPieceHoverReveal nextReveal)

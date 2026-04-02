@@ -10,12 +10,15 @@ namespace OurGame.Systems
     public class BackpackInventorySystem : SingletonMono<BackpackInventorySystem>
     {
         [SerializeField] private BackpackDefinition activeBackpackDefinition;
+        [SerializeField] private bool pauseWorldWhileInventoryOpen = true;
 
         private Backpack backpack;
         private string currentOpenPocket;
         private BackpackInteraction backpackInteraction;
         private readonly List<BackpackPocketDefinition> activePocketDefinitions = new List<BackpackPocketDefinition>();
         private const int HotbarSlotCount = 4;
+        private float savedTimeScale = 1f;
+        private bool worldPausedByInventory;
 
         public Backpack Backpack => backpack;
         public string CurrentOpenPocket => currentOpenPocket;
@@ -68,10 +71,10 @@ namespace OurGame.Systems
                 return;
 
             if (currentOpenPocket == pocketName)
-            {
-                CloseInventory();
                 return;
-            }
+
+            if (IsInventoryOpen)
+                return;
 
             Pocket pocket = GetPocket(pocketName);
             if (pocket == null)
@@ -82,6 +85,7 @@ namespace OurGame.Systems
 
             currentOpenPocket = pocketName;
             backpack.SetActivePocket(pocketName);
+            PauseWorldForInventory();
             ApplyCursorState();
             OnPocketOpened?.Invoke(currentOpenPocket);
             OnInventoryChanged?.Invoke(currentOpenPocket);
@@ -93,6 +97,7 @@ namespace OurGame.Systems
                 return;
 
             currentOpenPocket = null;
+            ResumeWorldFromInventory();
             ApplyCursorState();
             OnPocketClosed?.Invoke();
         }
@@ -242,6 +247,7 @@ namespace OurGame.Systems
                 backpack.LoadFromSave(previousSave);
 
             currentOpenPocket = null;
+            ResumeWorldFromInventory();
             OnPocketClosed?.Invoke();
             OnInventoryChanged?.Invoke(string.Empty);
         }
@@ -337,6 +343,25 @@ namespace OurGame.Systems
             Cursor.lockState = Cursor.visible ? CursorLockMode.None : CursorLockMode.Locked;
         }
 
+        private void PauseWorldForInventory()
+        {
+            if (!pauseWorldWhileInventoryOpen || worldPausedByInventory)
+                return;
+
+            savedTimeScale = Time.timeScale;
+            Time.timeScale = 0f;
+            worldPausedByInventory = true;
+        }
+
+        private void ResumeWorldFromInventory()
+        {
+            if (!worldPausedByInventory)
+                return;
+
+            Time.timeScale = savedTimeScale;
+            worldPausedByInventory = false;
+        }
+
         private void HandleHotbarSelectionInput()
         {
             Keyboard keyboard = Keyboard.current;
@@ -351,6 +376,8 @@ namespace OurGame.Systems
 
         void OnDestroy()
         {
+            ResumeWorldFromInventory();
+
             if (backpackInteraction != null)
                 backpackInteraction.OnPocketClicked -= HandlePocketClicked;
         }

@@ -80,16 +80,16 @@ public class InventorySlotView : MonoBehaviour, IPointerClickHandler, IBeginDrag
         {
             frameImage.enabled = !renderAsCursorGhost;
             frameImage.color = selected
-                ? new Color(0.96f, 0.78f, 0.26f, 1f)
-                : new Color(0.39f, 0.46f, 0.57f, 0.92f);
+                ? new Color32(157, 191, 190, 255)
+                : new Color32(97, 167, 255, 255);
         }
 
         if (backgroundImage != null)
         {
             backgroundImage.enabled = !renderAsCursorGhost;
             backgroundImage.color = selected
-                ? new Color(0.17f, 0.2f, 0.25f, 0.98f)
-                : new Color(0.09f, 0.11f, 0.15f, 0.96f);
+                ? new Color32(157, 191, 190, 255)
+                : new Color32(224, 224, 224, 220);
         }
 
         if (shortcutText != null)

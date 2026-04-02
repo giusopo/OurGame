@@ -17,6 +17,8 @@ public class ZainoController : MonoBehaviour
     [SerializeField] private int rightPocketState = 1;
 
     private BackpackInventorySystem inventorySystem;
+    private AnimatorUpdateMode originalUpdateMode = AnimatorUpdateMode.Normal;
+    private bool hasCachedAnimatorMode;
 
     void Reset()
     {
@@ -56,6 +58,12 @@ public class ZainoController : MonoBehaviour
 
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
+
+        if (animator != null && !hasCachedAnimatorMode)
+        {
+            originalUpdateMode = animator.updateMode;
+            hasCachedAnimatorMode = true;
+        }
     }
 
     private void TryBindInventorySystem()
@@ -78,12 +86,14 @@ public class ZainoController : MonoBehaviour
 
     private void HandlePocketOpened(string pocketName)
     {
+        SetAnimatorRealtimeMode(true);
         SetAnimatorState(GetPocketState(pocketName));
     }
 
     private void HandlePocketClosed()
     {
         SetAnimatorState(closedState);
+        SetAnimatorRealtimeMode(false);
     }
 
     private int GetPocketState(string pocketName)
@@ -107,6 +117,22 @@ public class ZainoController : MonoBehaviour
         animator.SetInteger(parametroAnim, state);
     }
 
+    private void SetAnimatorRealtimeMode(bool enabled)
+    {
+        if (animator == null)
+            return;
+
+        if (!hasCachedAnimatorMode)
+        {
+            originalUpdateMode = animator.updateMode;
+            hasCachedAnimatorMode = true;
+        }
+
+        animator.updateMode = enabled
+            ? AnimatorUpdateMode.UnscaledTime
+            : originalUpdateMode;
+    }
+
     private void Unsubscribe()
     {
         if (inventorySystem == null)
@@ -118,11 +144,13 @@ public class ZainoController : MonoBehaviour
 
     void OnDisable()
     {
+        SetAnimatorRealtimeMode(false);
         Unsubscribe();
     }
 
     void OnDestroy()
     {
+        SetAnimatorRealtimeMode(false);
         Unsubscribe();
     }
 }

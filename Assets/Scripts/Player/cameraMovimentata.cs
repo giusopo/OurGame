@@ -276,7 +276,7 @@ public class CameraController : MonoBehaviour
         if (attachedCamera == null)
             return;
 
-        transitionElapsed += Time.deltaTime;
+        transitionElapsed += Time.unscaledDeltaTime;
         float duration = Mathf.Max(0.01f, activeTransitionDuration);
         float t = Mathf.Clamp01(transitionElapsed / duration);
         float smoothT = Mathf.SmoothStep(0f, 1f, t);

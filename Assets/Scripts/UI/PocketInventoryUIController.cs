@@ -41,7 +41,7 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
     [SerializeField] private RectTransform cursorStackRoot;
     [SerializeField] private Transform hotbarRowRoot;
     [SerializeField] private Text hotbarSelectedItemText;
-    [SerializeField] private float pocketUiRevealDelay = 0.18f;
+    [SerializeField] private float pocketUiRevealDelay = 0.55f;
     [SerializeField] private List<PocketPanelBinding> pocketPanels = new List<PocketPanelBinding>();
 
     private readonly Dictionary<string, PocketPanelBinding> panelByPocket =
@@ -305,6 +305,7 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
             return;
         }
 
+        PreparePocketOverlay(pocketName);
         SchedulePocketReveal(pocketName);
     }
 
@@ -789,9 +790,28 @@ public class PocketInventoryUIController : SingletonMono<PocketInventoryUIContro
         pendingPocketShowRoutine = StartCoroutine(DelayedShowPocketUI(pocketName));
     }
 
+    private void PreparePocketOverlay(string pocketName)
+    {
+        CacheReferences();
+        PreparePocketPanels();
+        if (!referencesBound)
+            return;
+
+        HideAllPanels();
+        RefreshHotbar();
+        EnsureBindingPanelResolved(pocketName);
+        AttachCanvasToPocketAnchor(pocketName);
+
+        if (canvasRoot != null)
+            canvasRoot.gameObject.SetActive(true);
+
+        if (inventoryOverlay != null)
+            inventoryOverlay.gameObject.SetActive(true);
+    }
+
     private System.Collections.IEnumerator DelayedShowPocketUI(string pocketName)
     {
-        yield return new WaitForSeconds(pocketUiRevealDelay);
+        yield return new WaitForSecondsRealtime(pocketUiRevealDelay);
         pendingPocketShowRoutine = null;
 
         if (inventorySystem == null || !inventorySystem.IsInventoryOpen)
